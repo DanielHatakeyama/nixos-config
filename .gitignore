@@ -1,0 +1,37 @@
+# Build results
+result
+result-*
+
+# Direnv
+.direnv/
+
+# Editor files
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Home Manager specific
+.config/
+
+# Local/secret configuration files
+local.nix
+secrets.nix
+
+# Backup files
+*.backup
+*.bak
+
+# Cache directories
+.cache/
+
+# Log files
+*.log
