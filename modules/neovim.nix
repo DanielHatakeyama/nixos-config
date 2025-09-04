@@ -51,9 +51,20 @@ with lib;
       -- Ensure proper integration with system clipboard
       vim.opt.clipboard = 'unnamedplus'
       
+      -- Terminal colors and compatibility
+      vim.opt.termguicolors = true
+      
       -- Set font size if in a GUI
       if vim.g.neovide then
         vim.opt.guifont = "FiraCode Nerd Font:h${toString config.djh.neovim.font.size}"
+      end
+      
+      -- Kitty terminal specific optimizations
+      if vim.env.TERM == "xterm-kitty" then
+        vim.opt.termguicolors = true
+        -- Kitty supports undercurl
+        vim.g.terminal_color_0 = "#1e1e2e"
+        vim.g.terminal_color_8 = "#585b70"
       end
       
       -- bootstrap lazy.nvim, LazyVim and your plugins
@@ -124,23 +135,84 @@ with lib;
     home.file.".config/nvim/lua/config/options.lua".text = ''
       -- Options are automatically loaded before lazy.nvim startup
       -- Default options that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/options.lua
+      
+      -- Terminal color support
+      vim.opt.termguicolors = true
+      
+      -- Better color support for tmux and kitty
+      if vim.env.TERM == "xterm-kitty" or vim.env.TERM == "screen-256color" then
+        vim.opt.termguicolors = true
+      end
+      
       -- Add any additional options here
     '';
     
-    home.file.".config/nvim/lua/plugins/example.lua".text = ''
-      -- Every spec file under the "plugins" directory will be loaded automatically by Lazy
-      -- This file shows how to add custom plugins
-
+    home.file.".config/nvim/lua/plugins/colorscheme.lua".text = ''
+      -- Colorscheme configuration
       return {
-        -- add gruvbox colorscheme
-        { "ellisonleao/gruvbox.nvim" },
-
-        -- Configure LazyVim to load gruvbox
+        -- Tokyo Night colorscheme (LazyVim default, works great with terminals)
+        {
+          "folke/tokyonight.nvim",
+          lazy = false,
+          priority = 1000,
+          opts = {
+            style = "night", -- night, storm, day, moon
+            transparent = false,
+            terminal_colors = true,
+            styles = {
+              comments = { italic = true },
+              keywords = { italic = true },
+              functions = {},
+              variables = {},
+            },
+          },
+        },
+        
+        -- Catppuccin (another excellent option)
+        {
+          "catppuccin/nvim",
+          name = "catppuccin",
+          opts = {
+            flavour = "mocha", -- latte, frappe, macchiato, mocha
+            background = {
+              light = "latte",
+              dark = "mocha",
+            },
+            terminal_colors = true,
+          },
+        },
+        
+        -- Configure LazyVim to use Tokyo Night
         {
           "LazyVim/LazyVim",
           opts = {
-            colorscheme = "gruvbox",
+            colorscheme = "tokyonight-night",
           },
+        },
+      }
+    '';
+    
+    home.file.".config/nvim/lua/plugins/ui.lua".text = ''
+      -- UI enhancements for better color and terminal support
+      return {
+        -- Better terminal integration
+        {
+          "akinsho/toggleterm.nvim",
+          opts = {
+            direction = "float",
+            float_opts = {
+              border = "curved",
+            },
+          },
+        },
+        
+        -- Status line with better color support
+        {
+          "nvim-lualine/lualine.nvim",
+          opts = function(_, opts)
+            opts.options = opts.options or {}
+            opts.options.theme = "tokyonight"
+          end,
         },
       }
     '';
