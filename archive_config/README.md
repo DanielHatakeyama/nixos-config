@@ -1,1 +1,3 @@
 The files in this folder are previous dotfiles on an old machine. While I convert to homemanaged dotfiles, these represent a good starting point for my preferences.
+
+DO NOT USE THESE IN CONFIG DIRECTLY OR DEPEND ON THEM DIRECTLY

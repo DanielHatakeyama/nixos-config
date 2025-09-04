@@ -24,7 +24,7 @@
   djh.zen.enable = true;
   djh.gnome.enable = true;
   djh.kitty.enable = true;
-  djh.neovim.enable = true;
+  djh.neovim.enable = true;  # Re-enabled with standalone configuration
   djh.tmux.enable = true;
   djh.desktop-integration.enable = true;
 
