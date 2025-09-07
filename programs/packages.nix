@@ -21,4 +21,5 @@ with pkgs; [
   # Programs profile login custimization
   discord
   obsidian
+  tor-browser-bundle-bin # Anonymous web browsing via Tor network
 ]

@@ -109,6 +109,7 @@ with lib;
           "cursor.desktop:1"            # Cursor -> workspace 1 (code)  
           "zen-browser.desktop:2"       # Zen Browser -> workspace 2 (browser)
           "firefox.desktop:2"           # Firefox -> workspace 2 (browser)
+          "tor-browser.desktop:2"       # Tor Browser -> workspace 2 (browser)
           "org.gnome.Console.desktop:3" # Console -> workspace 3 (terminal)
           "kitty.desktop:3"             # Kitty -> workspace 3 (terminal)
           "discord.desktop:4"           # Discord -> workspace 4 (chat)
