@@ -77,29 +77,29 @@ with lib;
         auto-split-enabled = true;
         split-border-toggle = true;
         
-        # Keybindings for window focus (Super replaces Cmd from macOS)
-        window-focus-up = [ "<Super>k" ];
-        window-focus-down = [ "<Super>j" ];  
-        window-focus-left = [ "<Super>h" ];
-        window-focus-right = [ "<Super>l" ];
+        # Keybindings for window focus (Alt replaces Cmd from macOS)
+        window-focus-up = [ "<Alt>k" ];
+        window-focus-down = [ "<Alt>j" ];  
+        window-focus-left = [ "<Alt>h" ];
+        window-focus-right = [ "<Alt>l" ];
         
-        # Window movement keybindings (Super+Shift replaces Cmd+Shift)
-        window-move-up = [ "<Super><Shift>k" ];
-        window-move-down = [ "<Super><Shift>j" ];
-        window-move-left = [ "<Super><Shift>h" ];
-        window-move-right = [ "<Super><Shift>l" ];
+        # Window movement keybindings (Alt+Shift replaces Cmd+Shift)
+        window-move-up = [ "<Alt><Shift>k" ];
+        window-move-down = [ "<Alt><Shift>j" ];
+        window-move-left = [ "<Alt><Shift>h" ];
+        window-move-right = [ "<Alt><Shift>l" ];
         
         # Window resizing
-        window-resize-width-inc = [ "<Super><Alt>l" ];
-        window-resize-width-dec = [ "<Super><Alt>h" ];
-        window-resize-height-inc = [ "<Super><Alt>k" ];
-        window-resize-height-dec = [ "<Super><Alt>j" ];
+        window-resize-width-inc = [ "<Alt><Ctrl>l" ];
+        window-resize-width-dec = [ "<Alt><Ctrl>h" ];
+        window-resize-height-inc = [ "<Alt><Ctrl>k" ];
+        window-resize-height-dec = [ "<Alt><Ctrl>j" ];
         
         # Toggle floating (equivalent to yabai float/unfloat)
-        window-toggle-float = [ "<Super><Alt>f" ];
+        window-toggle-float = [ "<Alt>f" ];
         
         # Toggle always on top
-        window-toggle-always-on-top = [ "<Super><Shift>f" ];
+        window-toggle-always-on-top = [ "<Alt><Shift>f" ];
       };
 
       # Auto-move windows to specific workspaces (like yabai rules)
@@ -109,7 +109,7 @@ with lib;
           "cursor.desktop:1"            # Cursor -> workspace 1 (code)  
           "zen-browser.desktop:2"       # Zen Browser -> workspace 2 (browser)
           "firefox.desktop:2"           # Firefox -> workspace 2 (browser)
-          "tor-browser.desktop:2"       # Tor Browser -> workspace 2 (browser)
+          "torbrowser.desktop:2"        # Tor Browser -> workspace 2 (browser) - fixed name
           "org.gnome.Console.desktop:3" # Console -> workspace 3 (terminal)
           "kitty.desktop:3"             # Kitty -> workspace 3 (terminal)
           "discord.desktop:4"           # Discord -> workspace 4 (chat)
@@ -167,42 +167,42 @@ with lib;
         switch-group-backward = [ "<Shift><Alt>grave" "<Shift><Alt>Above_Tab" ];
         
         # Workspace switching (equivalent to yabai space focus)
-        switch-to-workspace-1 = [ "<Super>1" ];
-        switch-to-workspace-2 = [ "<Super>2" ];
-        switch-to-workspace-3 = [ "<Super>3" ];
-        switch-to-workspace-4 = [ "<Super>4" ];
-        switch-to-workspace-5 = [ "<Super>5" ];
-        switch-to-workspace-6 = [ "<Super>6" ];
-        switch-to-workspace-7 = [ "<Super>7" ];
-        switch-to-workspace-8 = [ "<Super>8" ];
-        switch-to-workspace-9 = [ "<Super>9" ];
+        switch-to-workspace-1 = [ "<Alt>1" ];
+        switch-to-workspace-2 = [ "<Alt>2" ];
+        switch-to-workspace-3 = [ "<Alt>3" ];
+        switch-to-workspace-4 = [ "<Alt>4" ];
+        switch-to-workspace-5 = [ "<Alt>5" ];
+        switch-to-workspace-6 = [ "<Alt>6" ];
+        switch-to-workspace-7 = [ "<Alt>7" ];
+        switch-to-workspace-8 = [ "<Alt>8" ];
+        switch-to-workspace-9 = [ "<Alt>9" ];
         
         # Move window to workspace (equivalent to yabai window --space)
-        move-to-workspace-1 = [ "<Super><Shift>1" ];
-        move-to-workspace-2 = [ "<Super><Shift>2" ];
-        move-to-workspace-3 = [ "<Super><Shift>3" ];
-        move-to-workspace-4 = [ "<Super><Shift>4" ];
-        move-to-workspace-5 = [ "<Super><Shift>5" ];
-        move-to-workspace-6 = [ "<Super><Shift>6" ];
-        move-to-workspace-7 = [ "<Super><Shift>7" ];
-        move-to-workspace-8 = [ "<Super><Shift>8" ];
-        move-to-workspace-9 = [ "<Super><Shift>9" ];
+        move-to-workspace-1 = [ "<Alt><Shift>1" ];
+        move-to-workspace-2 = [ "<Alt><Shift>2" ];
+        move-to-workspace-3 = [ "<Alt><Shift>3" ];
+        move-to-workspace-4 = [ "<Alt><Shift>4" ];
+        move-to-workspace-5 = [ "<Alt><Shift>5" ];
+        move-to-workspace-6 = [ "<Alt><Shift>6" ];
+        move-to-workspace-7 = [ "<Alt><Shift>7" ];
+        move-to-workspace-8 = [ "<Alt><Shift>8" ];
+        move-to-workspace-9 = [ "<Alt><Shift>9" ];
         
         # Workspace navigation (equivalent to yabai space --focus prev/next)
-        switch-to-workspace-left = [ "<Super><Ctrl>h" ];
-        switch-to-workspace-right = [ "<Super><Ctrl>l" ];
+        switch-to-workspace-left = [ "<Alt><Ctrl>h" ];
+        switch-to-workspace-right = [ "<Alt><Ctrl>l" ];
         
         # Window management
-        close = [ "<Super><Shift>q" ];  # Equivalent to skhd cmd+shift+q
-        toggle-fullscreen = [ "<Super>f" ];
-        toggle-maximized = [ "<Super>m" ];
-        minimize = [ "<Super>comma" ];
+        close = [ "<Alt><Shift>q" ];  # Equivalent to skhd cmd+shift+q
+        toggle-fullscreen = [ "<Alt><Shift>f" ];  # Changed to avoid conflict with float
+        toggle-maximized = [ "<Alt>m" ];
+        minimize = [ "<Alt>comma" ];
         
         # Window movement between monitors (equivalent to yabai display focus)
-        move-to-monitor-left = [ "<Super><Shift><Ctrl>h" ];
-        move-to-monitor-right = [ "<Super><Shift><Ctrl>l" ];
-        move-to-monitor-up = [ "<Super><Shift><Ctrl>k" ];
-        move-to-monitor-down = [ "<Super><Shift><Ctrl>j" ];
+        move-to-monitor-left = [ "<Alt><Shift><Ctrl>h" ];
+        move-to-monitor-right = [ "<Alt><Shift><Ctrl>l" ];
+        move-to-monitor-up = [ "<Alt><Shift><Ctrl>k" ];
+        move-to-monitor-down = [ "<Alt><Shift><Ctrl>j" ];
         
         # Activities overview (replaces Mission Control)
         panel-main-menu = [ "<Super>space" ];
@@ -215,7 +215,7 @@ with lib;
         toggle-tiled-right = [ "<Super>Right" ];
         
         # Recent workspace switching (equivalent to alt-tab for spaces)
-        switch-to-workspace-last = [ "<Super><Alt>Tab" ];
+        switch-to-workspace-last = [ "<Alt><Ctrl>Tab" ];
       } // (if config.djh.gnome.altTabSwitchesWindows then {
         # Make Alt+Tab cycle through windows instead of applications
         switch-windows = [ "<Alt>Tab" ];
@@ -237,21 +237,21 @@ with lib;
       
       # Terminal launcher (equivalent to quick terminal access)
       "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
-        binding = "<Super>Return";
+        binding = "<Alt>Return";
         command = "kitty";
         name = "Launch Terminal";
       };
       
       # Application launcher (equivalent to Spotlight)
       "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1" = {
-        binding = "<Super>r";
+        binding = "<Alt>r";
         command = "gnome-shell -c 'imports.ui.main.overview.show()'";
         name = "Application Launcher";
       };
       
       # File manager  
       "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2" = {
-        binding = "<Super>e";
+        binding = "<Alt>e";
         command = "nautilus";
         name = "File Manager";
       };

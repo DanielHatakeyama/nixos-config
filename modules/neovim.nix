@@ -9,7 +9,7 @@ with lib;
     font = {
       size = mkOption {
         type = types.int;
-        default = 13;
+        default = 12;
         description = "Font size for Neovim GUI clients";
       };
     };
@@ -217,6 +217,29 @@ with lib;
       }
     '';
     
+    # Obsidian integration for note-taking
+    home.file.".config/nvim/lua/plugins/obsidian.lua".text = ''
+      return {
+        "epwalsh/obsidian.nvim",
+        version = "*", -- always latest
+        dependencies = { "nvim-lua/plenary.nvim" },
+        opts = {
+          workspaces = {
+            {
+              name = "vault",
+              path = "~/vault",
+            },
+          },
+          completion = { nvim_cmp = true },
+        },
+        keys = {
+          -- Remap gd to follow links inside vault
+          { "gd", "<cmd>ObsidianFollowLink<CR>", desc = "Follow Obsidian link" },
+          { "gr", "<cmd>ObsidianBacklinks<CR>",  desc = "View backlinks" },
+        },
+      }
+    '';
+
     # Create a desktop entry for GUI neovim clients
     xdg.desktopEntries.nvim = mkIf pkgs.stdenv.isLinux {
       name = "Neovim";
