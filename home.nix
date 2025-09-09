@@ -9,6 +9,7 @@
     ./programs/zsh.nix
     ./modules/desktop-integration.nix
     ./modules/gnome.nix
+    ./modules/hyprland.nix
     ./modules/kitty.nix
     ./modules/neovim.nix
     ./modules/tmux.nix
@@ -23,7 +24,8 @@
   nixpkgs.config.allowUnfree = true;
 
   djh.zen.enable = true;
-  djh.gnome.enable = true;
+  djh.gnome.enable = true;               # Keep for now as backup
+  djh.hyprland.enable = true;            # New Hyprland setup
   djh.kitty.enable = true;
   djh.neovim.enable = true;  # Re-enabled with standalone configuration
   djh.tmux.enable = true;

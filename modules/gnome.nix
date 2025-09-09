@@ -44,18 +44,53 @@ with lib;
       xdotool          # X11 automation (for some advanced scripts)
       libnotify        # Desktop notifications for mode feedback
       glib             # Includes gdbus for D-Bus communication with GNOME Shell
+      xorg.setxkbmap   # Backup keyboard mapping tool
     ] ++ optionals config.djh.gnome.enableTilingExtensions [
       # Additional tiling-related packages
       gnomeExtensions.workspace-indicator
       gnomeExtensions.auto-move-windows
     ];
 
+    # Ensure keyboard mapping is applied on startup
+    home.file.".config/autostart/keyboard-setup.desktop".text = ''
+      [Desktop Entry]
+      Type=Application
+      Name=Keyboard Setup
+      Comment=Apply keyboard remapping (Caps→Escape, Alt↔Super)
+      Exec=setxkbmap -option caps:escape,altwin:swap_alt_win
+      Hidden=false
+      NoDisplay=false
+      X-GNOME-Autostart-enabled=true
+    '';
+
+    # Create a systemd user service for persistent keyboard mapping
+    systemd.user.services.keyboard-remap = {
+      Unit = {
+        Description = "Persistent keyboard remapping";
+        After = [ "graphical-session.target" ];
+      };
+      Service = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        ExecStart = "${pkgs.writeShellScript "keyboard-remap" ''
+          # Apply GNOME keyboard settings
+          ${pkgs.glib}/bin/gsettings set org.gnome.desktop.input-sources xkb-options "['altwin:swap_alt_win', 'caps:escape']"
+          
+          # For X11 sessions, also use setxkbmap as backup
+          if [ "$XDG_SESSION_TYPE" != "wayland" ]; then
+            ${pkgs.xorg.setxkbmap}/bin/setxkbmap -option caps:escape,altwin:swap_alt_win
+          fi
+        ''}";
+      };
+      Install.WantedBy = [ "graphical-session.target" ];
+    };
+
     # GNOME Extensions configuration (declarative)
     dconf.settings = {
       # Keyboard layout and key mapping configuration
       "org/gnome/desktop/input-sources" = {
-        # Swap Alt and Super keys system-wide
-        xkb-options = [ "altwin:swap_alt_win" ];
+        # Swap Alt and Super keys system-wide AND map Caps Lock to Escape
+        xkb-options = [ "altwin:swap_alt_win" "caps:escape" ];
       };
 
       # GNOME Shell keybindings (disable conflicting defaults)
@@ -232,6 +267,15 @@ with lib;
         natural-scroll = true;
         # Acceleration profile
         accel-profile = "adaptive";
+      };
+
+      # Additional keyboard behavior settings
+      "org/gnome/desktop/peripherals/keyboard" = {
+        # Ensure keyboard repeat settings are consistent
+        delay = 250;  # Delay before repeat starts (ms)
+        repeat-interval = 30;  # Repeat rate (ms between repeats)
+        # Make sure numlock state is preserved
+        numlock-state = true;
       };
 
       "org/gnome/desktop/peripherals/touchpad" = {
