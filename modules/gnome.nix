@@ -36,7 +36,11 @@ with lib;
     home.packages = with pkgs; [
       gnome-tweaks
       dconf-editor
-      # Window management extensions (installed via GNOME extensions)
+      # Additional packages for advanced window management
+      wmctrl           # Window management control
+      xdotool          # X11 automation (for some advanced scripts)
+      libnotify        # Desktop notifications for mode feedback
+      glib             # Includes gdbus for D-Bus communication with GNOME Shell
     ] ++ optionals config.djh.gnome.enableTilingExtensions [
       # Note: Extensions are installed through dconf settings below
     ];
@@ -63,19 +67,31 @@ with lib;
         ];
       });
 
-      # Forge extension settings (yabai-like tiling)
+      # Forge extension settings (comprehensive yabai-like tiling)
       "org/gnome/shell/extensions/forge" = {
-        # Window gaps (equivalent to yabai window_gap)
-        window-gap-size = 6;
-        window-gap-size-increment = 1;
-        
-        # Focus follows mouse (equivalent to yabai focus_follows_mouse)
-        focus-border-toggle = true;
-        
-        # Tiling layout settings
+        # Core tiling behavior (matching yabai config)
         tiling-mode-enabled = true;
         auto-split-enabled = true;
         split-border-toggle = true;
+        
+        # Window gaps (equivalent to yabai: top/bottom/left/right_padding 6, window_gap 6)
+        window-gap-size = 6;
+        window-gap-size-increment = 1;
+        
+        # Layout settings (equivalent to yabai: layout bsp, split_ratio 0.50, auto_balance off)
+        css-last-applied = ""; # Reset any custom styling
+        quick-settings-enabled = false;
+        
+        # Focus and mouse behavior (matching yabai: mouse_follows_focus on, focus_follows_mouse on)
+        focus-border-toggle = true;
+        focus-border-size = 2;
+        
+        # Window opacity (matching yabai: active_window_opacity 1.0, normal_window_opacity 0.90)
+        window-opacity-focus = 100;
+        window-opacity-unfocus = 90;
+        
+        # Disable focus wrapping (matching yabai: focus_wraps off)
+        focus-wraps = false;
         
         # Keybindings for window focus (Alt replaces Cmd from macOS)
         window-focus-up = [ "<Alt>k" ];
@@ -89,17 +105,40 @@ with lib;
         window-move-left = [ "<Alt><Shift>h" ];
         window-move-right = [ "<Alt><Shift>l" ];
         
-        # Window resizing
+        # Window swapping/warping (equivalent to yabai --warp)
+        window-swap-up = [ "<Alt><Ctrl><Shift>k" ];
+        window-swap-down = [ "<Alt><Ctrl><Shift>j" ];
+        window-swap-left = [ "<Alt><Ctrl><Shift>h" ];
+        window-swap-right = [ "<Alt><Ctrl><Shift>l" ];
+        
+        # Window resizing (basic controls)
         window-resize-width-inc = [ "<Alt><Ctrl>l" ];
         window-resize-width-dec = [ "<Alt><Ctrl>h" ];
         window-resize-height-inc = [ "<Alt><Ctrl>k" ];
         window-resize-height-dec = [ "<Alt><Ctrl>j" ];
         
-        # Toggle floating (equivalent to yabai float/unfloat)
-        window-toggle-float = [ "<Alt>f" ];
+        # Toggle floating (equivalent to yabai float/unfloat with 4:4:1:1:2:2 grid) - Using advanced script
+        window-toggle-float = []; # Disable default, use custom keybinding below
+        window-snap-center = true;
+        window-snap-one-third = false;
         
         # Toggle always on top
         window-toggle-always-on-top = [ "<Alt><Shift>f" ];
+        
+        # Split direction control (equivalent to yabai split direction)
+        window-toggle-split = [ "<Alt>v" ];
+        
+        # BSP layout controls
+        window-gap-hidden-on-single = false;
+        workspace-skip-tile = [];
+        
+        # Multi-monitor behavior
+        move-pointer-focus-enabled = true;
+        move-pointer-focus-delay = 100;
+        
+        # Drag-to-tile settings
+        drag-to-tile = true;
+        drag-to-tile-gutter = 20;
       };
 
       # Auto-move windows to specific workspaces (like yabai rules)
@@ -232,6 +271,9 @@ with lib;
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/"
+          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3/"
+          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4/"
+          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5/"
         ];
       };
       
@@ -256,23 +298,61 @@ with lib;
         name = "File Manager";
       };
       
+      # Modal resize system (Alt+p enters resize mode) - Using advanced window management script
+      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3" = {
+        binding = "<Alt>p";
+        command = "${config.home.homeDirectory}/.config/home-manager/scripts/gnome-window-manager.sh resize-mode";
+        name = "Enter Resize Mode";
+      };
+      
+      # Recent workspace switching (Alt+Tab for workspaces, matching yabai alt-tab behavior)
+      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4" = {
+        binding = "<Alt><Ctrl>Tab";
+        command = "${config.home.homeDirectory}/.config/home-manager/scripts/gnome-window-manager.sh recent-workspace";
+        name = "Recent Workspace Switch";
+      };
+      
+      # WASD navigation mode (Alt+w enters WASD mode, matching skhd wasd mode)
+      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5" = {
+        binding = "<Alt>w";
+        command = "${config.home.homeDirectory}/.config/home-manager/scripts/gnome-window-manager.sh wasd-mode";
+        name = "Enter WASD Navigation Mode";
+      };
+      
       # Shell behavior (moved and consolidated)
       # Note: org/gnome/shell settings are above in the GNOME Extensions section
 
-      # Mutter (GNOME's window manager) settings
+      # Mutter (GNOME's window manager) settings - Enhanced for tiling
       "org/gnome/mutter" = {
-        # Enable experimental features for better tiling
-        experimental-features = [ "scale-monitor-framebuffer" ];
+        # Enable experimental features for better tiling support
+        experimental-features = [ "scale-monitor-framebuffer" "rt-scheduler" ];
+        
         # Window dragging behavior
         attach-modal-dialogs = false;
-        # Focus change delay (equivalent to yabai's responsiveness)
+        
+        # Focus change settings (equivalent to yabai responsiveness)
         focus-change-on-pointer-rest = true;
-        # Edge tiling
+        
+        # Edge tiling behavior
         edge-tiling = true;
-        # Dynamic workspaces (set to false for fixed workspace count)
+        
+        # Dynamic workspaces (set to false for fixed workspace count like yabai)
         dynamic-workspaces = false;
-        # Workspaces on primary display only
-        workspaces-only-on-primary = true;
+        
+        # Workspaces on primary display only (yabai-like behavior)
+        workspaces-only-on-primary = false; # Allow multi-monitor workspaces
+        
+        # Center new windows (helps with floating window placement)
+        center-new-windows = true;
+        
+        # Auto-maximize behavior
+        auto-maximize = false; # Disable to allow tiling control
+        
+        # Window animations (matching yabai: window_animation_duration 0.0)
+        resize-with-right-button = true;
+        
+        # Overlay key behavior (disable Super key overlay to avoid conflicts)
+        overlay-key = ""; # Disable overlay key to free up Super for tiling
       };
     };
 

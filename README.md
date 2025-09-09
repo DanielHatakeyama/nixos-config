@@ -1,4 +1,4 @@
-# Home Manager Configuration
+ Home Manager Configuration
 
 This repository contains my personal Home Manager configuration for managing dotfiles and system packages across multiple systems using Nix.
 
