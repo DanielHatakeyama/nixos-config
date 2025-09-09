@@ -24,8 +24,8 @@
   nixpkgs.config.allowUnfree = true;
 
   djh.zen.enable = true;
-  djh.gnome.enable = true;               # Keep for now as backup
-  djh.hyprland.enable = true;            # New Hyprland setup
+  djh.gnome.enable = false;              # Disabled - switching to Hyprland
+  djh.hyprland.enable = true;            # Primary desktop environment
   djh.kitty.enable = true;
   djh.neovim.enable = true;  # Re-enabled with standalone configuration
   djh.tmux.enable = true;
