@@ -191,27 +191,38 @@ wasd_navigate() {
     esac
 }
 
-# Float window and center (matching yabai grid 4:4:1:1:2:2)
-toggle_float_center() {
+# Float window and center (matching skhd alt+f with yabai grid 4:4:1:1:2:2)
+float_toggle() {
+    # Toggle floating and center window using Forge extension API
     gdbus call --session --dest=org.gnome.Shell --object-path=/org/gnome/Shell --method=org.gnome.Shell.Eval "
         let win = global.display.focus_window;
         if (win) {
-            if (win.is_floating && win.is_floating()) {
-                // Tile the window
-                win.tile();
-            } else {
-                // Float and center (4:4:1:1:2:2 = center 50% of screen)  
-                win.float();
-                let monitor = win.get_monitor();
-                let workArea = win.get_work_area_for_monitor(monitor);
-                let width = Math.floor(workArea.width * 0.5);
-                let height = Math.floor(workArea.height * 0.5);
-                let x = workArea.x + Math.floor((workArea.width - width) / 2);
-                let y = workArea.y + Math.floor((workArea.height - height) / 2);
-                win.move_resize_frame(false, x, y, width, height);
+            // Toggle float via Forge extension if available
+            if (global.workspace_manager && global.workspace_manager.getActiveWorkspace) {
+                let workspace = global.workspace_manager.getActiveWorkspace();
+                let ext = Main.extensionManager.lookup('forge@jmmaranan.com');
+                if (ext && ext.stateObj && ext.stateObj.ext) {
+                    ext.stateObj.ext.focus.toggleFloat();
+                }
             }
+            
+            // Position window in 4:4:1:1:2:2 grid (center, half size)
+            let monitor = Main.layoutManager.currentMonitor;
+            let workArea = Main.layoutManager.getWorkAreaForMonitor(monitor.index);
+            
+            let width = Math.floor(workArea.width * 0.5);   // 2/4 of width
+            let height = Math.floor(workArea.height * 0.5); // 2/4 of height  
+            let x = workArea.x + Math.floor(workArea.width * 0.25);  // 1/4 from left
+            let y = workArea.y + Math.floor(workArea.height * 0.25); // 1/4 from top
+            
+            win.move_resize_frame(false, x, y, width, height);
         }
-    "
+    " 2>/dev/null || {
+        # Fallback: Use wmctrl for basic float toggle
+        wmctrl -r :ACTIVE: -e 0,$(($(xdpyinfo | grep dimensions | cut -d' ' -f7 | cut -dx -f1) / 4)),$(($(xdpyinfo | grep dimensions | cut -d' ' -f7 | cut -dx -f2) / 4)),$(($(xdpyinfo | grep dimensions | cut -d' ' -f7 | cut -dx -f1) / 2)),$(($(xdpyinfo | grep dimensions | cut -d' ' -f7 | cut -dx -f2) / 2))
+    }
+    
+    notify_mode "Float Toggle" "Window toggled float/tile with 4:4:1:1:2:2 grid positioning"
 }
 
 # Main command dispatcher
@@ -231,12 +242,17 @@ case "${1:-}" in
     "wasd")
         wasd_navigate "${2:-}"
         ;;
-    "toggle-float")
-        toggle_float_center
+    "float-toggle")
+        float_toggle
+        ;;
+    "recent-workspace")
+        # Switch to most recent workspace
+        gdbus call --session --dest=org.gnome.Shell --object-path=/org/gnome/Shell --method=org.gnome.Shell.Eval \
+            "Main.wm._showWorkspaceSwitcher(global.display, null, Meta.KeyBindingAction.SWITCH_WORKSPACES);"
         ;;
     *)
-        echo "Usage: $0 {focus|resize-mode|resize|wasd-mode|wasd|toggle-float} [args...]"
-        echo "Advanced GNOME window management matching yabai/skhd behavior"
+        echo "Usage: $0 {focus|resize-mode|resize|wasd-mode|wasd|float-toggle|recent-workspace} [args...]"
+        echo "Advanced GNOME window management matching skhd behavior exactly"
         exit 1
         ;;
 esac

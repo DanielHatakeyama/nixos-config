@@ -47,6 +47,12 @@ with lib;
 
     # GNOME Extensions configuration (declarative)
     dconf.settings = {
+      # Keyboard layout and key mapping configuration
+      "org/gnome/desktop/input-sources" = {
+        # Swap Alt and Super keys system-wide
+        xkb-options = [ "altwin:swap_alt_win" ];
+      };
+
       # GNOME Extensions configuration and shell behavior
       "org/gnome/shell" = {
         # Always show workspace thumbnails in overview
@@ -93,37 +99,36 @@ with lib;
         # Disable focus wrapping (matching yabai: focus_wraps off)
         focus-wraps = false;
         
-        # Keybindings for window focus (Alt replaces Cmd from macOS)
-        window-focus-up = [ "<Alt>k" ];
-        window-focus-down = [ "<Alt>j" ];  
-        window-focus-left = [ "<Alt>h" ];
-        window-focus-right = [ "<Alt>l" ];
+        # Window focus navigation (matching skhd cmd+hjkl exactly)
+        # Note: After key swap, these use physical Super key (was Alt in config)
+        window-focus-up = [ "<Super>k" ];
+        window-focus-down = [ "<Super>j" ];  
+        window-focus-left = [ "<Super>h" ];
+        window-focus-right = [ "<Super>l" ];
         
-        # Window movement keybindings (Alt+Shift replaces Cmd+Shift)
-        window-move-up = [ "<Alt><Shift>k" ];
-        window-move-down = [ "<Alt><Shift>j" ];
-        window-move-left = [ "<Alt><Shift>h" ];
-        window-move-right = [ "<Alt><Shift>l" ];
+        # Window movement/warping (matching skhd cmd+shift+hjkl)
+        window-move-up = [ "<Super><Shift>k" ];
+        window-move-down = [ "<Super><Shift>j" ];
+        window-move-left = [ "<Super><Shift>h" ];
+        window-move-right = [ "<Super><Shift>l" ];
         
-        # Window swapping/warping (equivalent to yabai --warp)
-        window-swap-up = [ "<Alt><Ctrl><Shift>k" ];
-        window-swap-down = [ "<Alt><Ctrl><Shift>j" ];
-        window-swap-left = [ "<Alt><Ctrl><Shift>h" ];
-        window-swap-right = [ "<Alt><Ctrl><Shift>l" ];
+        # Window swapping (equivalent to yabai --warp, using Ctrl as modifier)
+        window-swap-up = [ "<Super><Ctrl><Shift>k" ];
+        window-swap-down = [ "<Super><Ctrl><Shift>j" ];
+        window-swap-left = [ "<Super><Ctrl><Shift>h" ];
+        window-swap-right = [ "<Super><Ctrl><Shift>l" ];
         
-        # Window resizing (basic controls)
-        window-resize-width-inc = [ "<Alt><Ctrl>l" ];
-        window-resize-width-dec = [ "<Alt><Ctrl>h" ];
-        window-resize-height-inc = [ "<Alt><Ctrl>k" ];
-        window-resize-height-dec = [ "<Alt><Ctrl>j" ];
+        # Disable window resizing keybindings (will use modal system instead)
+        window-resize-width-inc = [];
+        window-resize-width-dec = [];
+        window-resize-height-inc = [];
+        window-resize-height-dec = [];
         
-        # Toggle floating (equivalent to yabai float/unfloat with 4:4:1:1:2:2 grid) - Using advanced script
-        window-toggle-float = []; # Disable default, use custom keybinding below
-        window-snap-center = true;
-        window-snap-one-third = false;
+        # Toggle floating - DISABLED (using custom script instead)
+        window-toggle-float = [];
         
-        # Toggle always on top
-        window-toggle-always-on-top = [ "<Alt><Shift>f" ];
+        # Always on top toggle (useful for floating windows)
+        window-toggle-always-on-top = [ "<Super><Shift>t" ];
         
         # Split direction control (equivalent to yabai split direction)
         window-toggle-split = [ "<Alt>v" ];
@@ -205,37 +210,41 @@ with lib;
         switch-group = [ "<Alt>grave" "<Alt>Above_Tab" ];
         switch-group-backward = [ "<Shift><Alt>grave" "<Shift><Alt>Above_Tab" ];
         
-        # Workspace switching (equivalent to yabai space focus)
-        switch-to-workspace-1 = [ "<Alt>1" ];
-        switch-to-workspace-2 = [ "<Alt>2" ];
-        switch-to-workspace-3 = [ "<Alt>3" ];
-        switch-to-workspace-4 = [ "<Alt>4" ];
-        switch-to-workspace-5 = [ "<Alt>5" ];
-        switch-to-workspace-6 = [ "<Alt>6" ];
-        switch-to-workspace-7 = [ "<Alt>7" ];
-        switch-to-workspace-8 = [ "<Alt>8" ];
-        switch-to-workspace-9 = [ "<Alt>9" ];
+        # Workspace switching (matching skhd cmd+1-9 exactly)
+        # Note: After key swap, these use physical Super key
+        switch-to-workspace-1 = [ "<Super>1" ];
+        switch-to-workspace-2 = [ "<Super>2" ];
+        switch-to-workspace-3 = [ "<Super>3" ];
+        switch-to-workspace-4 = [ "<Super>4" ];
+        switch-to-workspace-5 = [ "<Super>5" ];
+        switch-to-workspace-6 = [ "<Super>6" ];
+        switch-to-workspace-7 = [ "<Super>7" ];
+        switch-to-workspace-8 = [ "<Super>8" ];
+        switch-to-workspace-9 = [ "<Super>9" ];
         
-        # Move window to workspace (equivalent to yabai window --space)
-        move-to-workspace-1 = [ "<Alt><Shift>1" ];
-        move-to-workspace-2 = [ "<Alt><Shift>2" ];
-        move-to-workspace-3 = [ "<Alt><Shift>3" ];
-        move-to-workspace-4 = [ "<Alt><Shift>4" ];
-        move-to-workspace-5 = [ "<Alt><Shift>5" ];
-        move-to-workspace-6 = [ "<Alt><Shift>6" ];
-        move-to-workspace-7 = [ "<Alt><Shift>7" ];
-        move-to-workspace-8 = [ "<Alt><Shift>8" ];
-        move-to-workspace-9 = [ "<Alt><Shift>9" ];
+        # Move window to workspace (matching skhd cmd+shift+1-9)
+        move-to-workspace-1 = [ "<Super><Shift>1" ];
+        move-to-workspace-2 = [ "<Super><Shift>2" ];
+        move-to-workspace-3 = [ "<Super><Shift>3" ];
+        move-to-workspace-4 = [ "<Super><Shift>4" ];
+        move-to-workspace-5 = [ "<Super><Shift>5" ];
+        move-to-workspace-6 = [ "<Super><Shift>6" ];
+        move-to-workspace-7 = [ "<Super><Shift>7" ];
+        move-to-workspace-8 = [ "<Super><Shift>8" ];
+        move-to-workspace-9 = [ "<Super><Shift>9" ];
         
-        # Workspace navigation (equivalent to yabai space --focus prev/next)
-        switch-to-workspace-left = [ "<Alt><Ctrl>h" ];
-        switch-to-workspace-right = [ "<Alt><Ctrl>l" ];
+        # Workspace navigation (matching skhd cmd+ctrl+h/l)
+        switch-to-workspace-left = [ "<Super><Ctrl>h" ];
+        switch-to-workspace-right = [ "<Super><Ctrl>l" ];
         
-        # Window management
-        close = [ "<Alt><Shift>q" ];  # Equivalent to skhd cmd+shift+q
-        toggle-fullscreen = [ "<Alt><Shift>f" ];  # Changed to avoid conflict with float
-        toggle-maximized = [ "<Alt>m" ];
-        minimize = [ "<Alt>comma" ];
+        # Window management (matching skhd exactly)
+        close = [ "<Super><Shift>q" ];  # Matching skhd cmd+shift+q
+        toggle-fullscreen = [ "<Super>f" ];  # Standard fullscreen toggle
+        toggle-maximized = [ "<Super>m" ];
+        minimize = [ "<Super>comma" ];
+        
+        # Recent workspace switching (matching skhd alt+tab behavior)
+        switch-to-workspace-last = [ "<Alt>Tab" ];
         
         # Window movement between monitors (equivalent to yabai display focus)
         move-to-monitor-left = [ "<Alt><Shift><Ctrl>h" ];
@@ -252,9 +261,6 @@ with lib;
         # Window snapping (basic tiling)
         toggle-tiled-left = [ "<Super>Left" ];
         toggle-tiled-right = [ "<Super>Right" ];
-        
-        # Recent workspace switching (equivalent to alt-tab for spaces)
-        switch-to-workspace-last = [ "<Alt><Ctrl>Tab" ];
       } // (if config.djh.gnome.altTabSwitchesWindows then {
         # Make Alt+Tab cycle through windows instead of applications
         switch-windows = [ "<Alt>Tab" ];
@@ -277,46 +283,46 @@ with lib;
         ];
       };
       
-      # Terminal launcher (equivalent to quick terminal access)
+      # Float toggle (matching skhd alt+f with 4:4:1:1:2:2 grid) - Using advanced script
       "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
-        binding = "<Alt>Return";
-        command = "kitty";
-        name = "Launch Terminal";
+        binding = "<Alt>f";
+        command = "${config.home.homeDirectory}/.config/home-manager/scripts/gnome-window-manager.sh float-toggle";
+        name = "Float Toggle with Grid";
       };
       
-      # Application launcher (equivalent to Spotlight)
+      # Modal resize system (matching skhd alt+r and alt+p for resize mode)
       "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1" = {
         binding = "<Alt>r";
-        command = "gnome-shell -c 'imports.ui.main.overview.show()'";
-        name = "Application Launcher";
-      };
-      
-      # File manager  
-      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2" = {
-        binding = "<Alt>e";
-        command = "nautilus";
-        name = "File Manager";
-      };
-      
-      # Modal resize system (Alt+p enters resize mode) - Using advanced window management script
-      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3" = {
-        binding = "<Alt>p";
         command = "${config.home.homeDirectory}/.config/home-manager/scripts/gnome-window-manager.sh resize-mode";
         name = "Enter Resize Mode";
       };
       
-      # Recent workspace switching (Alt+Tab for workspaces, matching yabai alt-tab behavior)
+      # Alternative resize mode binding (matching skhd alt+p)
+      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2" = {
+        binding = "<Alt>p";
+        command = "${config.home.homeDirectory}/.config/home-manager/scripts/gnome-window-manager.sh resize-mode";
+        name = "Enter Resize Mode (Alt)";
+      };
+      
+      # WASD navigation mode (matching skhd alt+w for WASD mode)
+      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3" = {
+        binding = "<Alt>w";
+        command = "${config.home.homeDirectory}/.config/home-manager/scripts/gnome-window-manager.sh wasd-mode";
+        name = "Enter WASD Navigation Mode";
+      };
+      
+      # Recent workspace switching (matching skhd alt+tab behavior exactly)
       "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4" = {
-        binding = "<Alt><Ctrl>Tab";
+        binding = "<Alt>Tab";
         command = "${config.home.homeDirectory}/.config/home-manager/scripts/gnome-window-manager.sh recent-workspace";
         name = "Recent Workspace Switch";
       };
       
-      # WASD navigation mode (Alt+w enters WASD mode, matching skhd wasd mode)
+      # Quick terminal access (useful for development workflow)
       "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5" = {
-        binding = "<Alt>w";
-        command = "${config.home.homeDirectory}/.config/home-manager/scripts/gnome-window-manager.sh wasd-mode";
-        name = "Enter WASD Navigation Mode";
+        binding = "<Super>Return";  # Changed to Super since Alt+Return interferes with some apps
+        command = "kitty";
+        name = "Launch Terminal";
       };
       
       # Shell behavior (moved and consolidated)
