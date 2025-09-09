@@ -47,7 +47,74 @@ window_focus() {
     # Application-specific exclusions (matching skhd behavior)
     if is_excluded_app "$app"; then
         case "$direction" in
-            "up"|"north")
+            "up"|"north"|"k")
+                # In Cursor/Zen: Super+k should trigger Ctrl+Shift+Tab (previous tab)
+                if [[ "$app" =~ [Zz]en ]]; then
+                    xdotool key ctrl+shift+Tab
+                    return 0
+                elif [[ "$app" =~ [Cc]ursor ]]; then
+                    # Pass through - don't interfere
+                    return 0
+                fi
+                ;;
+            "down"|"south"|"j") 
+                # In Cursor/Zen: Super+j should trigger Ctrl+Tab (next tab)
+                if [[ "$app" =~ [Zz]en ]]; then
+                    xdotool key ctrl+Tab
+                    return 0
+                elif [[ "$app" =~ [Cc]ursor ]]; then
+                    # Pass through - don't interfere
+                    return 0
+                fi
+                ;;
+        esac
+    fi
+    
+    # Normal window focus using multiple methods
+    local success=false
+    
+    # Method 1: Try using Pop Shell if available
+    if gdbus call --session --dest=org.gnome.Shell --object-path=/org/gnome/Shell --method=org.gnome.Shell.Eval \
+        "imports.ui.main.extensionManager.lookup('pop-shell@system76.com')" 2>/dev/null | grep -q "true"; then
+        case "$direction" in
+            "left"|"west"|"h")
+                gdbus call --session --dest=org.gnome.Shell --object-path=/org/gnome/Shell --method=org.gnome.Shell.Eval \
+                    "imports.ui.main.extensionManager.lookup('pop-shell@system76.com').stateObj.focus('left');" 2>/dev/null && success=true
+                ;;
+            "right"|"east"|"l")
+                gdbus call --session --dest=org.gnome.Shell --object-path=/org/gnome/Shell --method=org.gnome.Shell.Eval \
+                    "imports.ui.main.extensionManager.lookup('pop-shell@system76.com').stateObj.focus('right');" 2>/dev/null && success=true
+                ;;
+            "up"|"north"|"k")
+                gdbus call --session --dest=org.gnome.Shell --object-path=/org/gnome/Shell --method=org.gnome.Shell.Eval \
+                    "imports.ui.main.extensionManager.lookup('pop-shell@system76.com').stateObj.focus('up');" 2>/dev/null && success=true
+                ;;
+            "down"|"south"|"j")
+                gdbus call --session --dest=org.gnome.Shell --object-path=/org/gnome/Shell --method=org.gnome.Shell.Eval \
+                    "imports.ui.main.extensionManager.lookup('pop-shell@system76.com').stateObj.focus('down');" 2>/dev/null && success=true
+                ;;
+        esac
+    fi
+    
+    # Method 2: Try using wmctrl as fallback
+    if [ "$success" = false ]; then
+        case "$direction" in
+            "left"|"west"|"h")
+                # Get current window position and find window to the left
+                wmctrl -a :ACTIVE:
+                ;;
+            "right"|"east"|"l")
+                wmctrl -a :ACTIVE:
+                ;;
+            "up"|"north"|"k")
+                wmctrl -a :ACTIVE:
+                ;;  
+            "down"|"south"|"j")
+                wmctrl -a :ACTIVE:
+                ;;
+        esac
+    fi
+}
                 if [[ "$app" == *"zen"* ]] || [[ "$app" == *"Zen"* ]]; then
                     # Zen: Send Ctrl+Shift+Tab (previous tab)
                     gdbus call --session --dest=org.gnome.Shell \

@@ -12,6 +12,7 @@
     ./modules/kitty.nix
     ./modules/neovim.nix
     ./modules/tmux.nix
+    ./modules/tridactyl.nix
     ./modules/zen.nix
   ];
 
@@ -26,6 +27,7 @@
   djh.kitty.enable = true;
   djh.neovim.enable = true;  # Re-enabled with standalone configuration
   djh.tmux.enable = true;
+  djh.tridactyl.enable = true;  # Browser vim-like navigation
   djh.desktop-integration.enable = true;
 
   # This value determines the Home Manager release that your configuration is

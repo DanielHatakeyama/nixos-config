@@ -32,17 +32,22 @@ with lib;
   };
 
   config = mkIf config.djh.gnome.enable {
-    # GNOME-specific packages
+    # GNOME-specific packages including tiling extension
     home.packages = with pkgs; [
       gnome-tweaks
       dconf-editor
+      # Tiling window manager extensions
+      gnomeExtensions.forge           # BSP tiling window manager
+      gnomeExtensions.pop-shell       # Auto-tiling alternative
       # Additional packages for advanced window management
       wmctrl           # Window management control
       xdotool          # X11 automation (for some advanced scripts)
       libnotify        # Desktop notifications for mode feedback
       glib             # Includes gdbus for D-Bus communication with GNOME Shell
     ] ++ optionals config.djh.gnome.enableTilingExtensions [
-      # Note: Extensions are installed through dconf settings below
+      # Additional tiling-related packages
+      gnomeExtensions.workspace-indicator
+      gnomeExtensions.auto-move-windows
     ];
 
     # GNOME Extensions configuration (declarative)
@@ -53,6 +58,25 @@ with lib;
         xkb-options = [ "altwin:swap_alt_win" ];
       };
 
+      # GNOME Shell keybindings (disable conflicting defaults)
+      "org/gnome/shell/keybindings" = {
+        # Disable default application switching shortcuts that conflict with workspace switching
+        switch-to-application-1 = [];
+        switch-to-application-2 = [];
+        switch-to-application-3 = [];
+        switch-to-application-4 = [];
+        switch-to-application-5 = [];
+        switch-to-application-6 = [];
+        switch-to-application-7 = [];
+        switch-to-application-8 = [];
+        switch-to-application-9 = [];
+        
+        # Also disable screenshot shortcuts that might conflict
+        screenshot = [];
+        screenshot-window = [];
+        show-screenshot-ui = [];
+      };
+
       # GNOME Extensions configuration and shell behavior
       "org/gnome/shell" = {
         # Always show workspace thumbnails in overview
@@ -60,9 +84,10 @@ with lib;
         # Enable workspace switcher in overview  
         workspace-switcher-should-show = true;
       } // (if config.djh.gnome.enableTilingExtensions then {
-        # Enable tiling extensions
+        # Enable tiling extensions - Try Pop Shell for better auto-tiling
         enabled-extensions = [
-          "forge@jmmaranan.com"          # Tiling window manager
+          "pop-shell@system76.com"      # Pop Shell auto-tiling
+          "forge@jmmaranan.com"          # Forge BSP tiling (fallback)
           "workspace-indicator@gnome-shell-extensions.gcampax.github.com"
           "auto-move-windows@gnome-shell-extensions.gcampax.github.com"
         ];
@@ -73,7 +98,24 @@ with lib;
         ];
       });
 
-      # Forge extension settings (comprehensive yabai-like tiling)
+      # Pop Shell extension settings (better auto-tiling)
+      "org/gnome/shell/extensions/pop-shell" = {
+        # Enable auto-tiling
+        tile-by-default = true;
+        # Gap settings
+        gap-inner = 6;
+        gap-outer = 6;
+        # Smart gaps (hide when only one window)
+        smart-gaps = true;
+        # Enable snap to grid
+        snap-to-grid = true;
+        # Show window titles
+        show-title = false;
+        # Activate hint mode
+        hint-color-rgba = "rgba(251, 184, 108, 1)";
+      };
+
+      # Forge extension settings (comprehensive yabai-like tiling) - Fallback
       "org/gnome/shell/extensions/forge" = {
         # Core tiling behavior (matching yabai config)
         tiling-mode-enabled = true;
@@ -99,12 +141,11 @@ with lib;
         # Disable focus wrapping (matching yabai: focus_wraps off)
         focus-wraps = false;
         
-        # Window focus navigation (matching skhd cmd+hjkl exactly)
-        # Note: After key swap, these use physical Super key (was Alt in config)
-        window-focus-up = [ "<Super>k" ];
-        window-focus-down = [ "<Super>j" ];  
-        window-focus-left = [ "<Super>h" ];
-        window-focus-right = [ "<Super>l" ];
+        # Window focus navigation - DISABLED (using custom keybindings instead)
+        window-focus-up = [];
+        window-focus-down = [];  
+        window-focus-left = [];
+        window-focus-right = [];
         
         # Window movement/warping (matching skhd cmd+shift+hjkl)
         window-move-up = [ "<Super><Shift>k" ];
@@ -273,6 +314,14 @@ with lib;
 
       # Custom keybindings for additional yabai-like functionality  
       "org/gnome/settings-daemon/plugins/media-keys" = {
+        # Disable conflicting default shortcuts
+        calculator = [];
+        email = [];  
+        home = [];
+        search = [];
+        www = [];
+        screensaver = [];  # This disables Super+L screen lock
+        
         custom-keybindings = [
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/"
@@ -280,6 +329,10 @@ with lib;
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5/"
+          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom6/"
+          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom7/"
+          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom8/"
+          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom9/"
         ];
       };
       
@@ -323,6 +376,31 @@ with lib;
         binding = "<Super>Return";  # Changed to Super since Alt+Return interferes with some apps
         command = "kitty";
         name = "Launch Terminal";
+      };
+
+      # Window focus commands (bypassing GNOME's broken focus system)
+      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom6" = {
+        binding = "<Super>h";
+        command = "${config.home.homeDirectory}/.config/home-manager/scripts/gnome-window-manager.sh focus left";
+        name = "Focus Window Left";
+      };
+
+      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom7" = {
+        binding = "<Super>j";
+        command = "${config.home.homeDirectory}/.config/home-manager/scripts/gnome-window-manager.sh focus down";
+        name = "Focus Window Down";
+      };
+
+      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom8" = {
+        binding = "<Super>k";
+        command = "${config.home.homeDirectory}/.config/home-manager/scripts/gnome-window-manager.sh focus up";
+        name = "Focus Window Up";
+      };
+
+      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom9" = {
+        binding = "<Super>l";
+        command = "${config.home.homeDirectory}/.config/home-manager/scripts/gnome-window-manager.sh focus right";
+        name = "Focus Window Right";
       };
       
       # Shell behavior (moved and consolidated)
