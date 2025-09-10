@@ -14,6 +14,9 @@ with pkgs; [
   ripgrep
   fd
 
+  # Network tools
+  nmap
+
   # Imperitive / Ad-Hoc Package Management
   appimage-run
   flatpak
