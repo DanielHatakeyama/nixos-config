@@ -144,6 +144,23 @@ with lib;
         vim.opt.termguicolors = true
       end
       
+      -- Transparency settings - give Neovim its own background control
+      vim.cmd([[
+        augroup NeovimBackgroundSettings
+          autocmd!
+          " Set a subtle dark background for better readability in Neovim
+          autocmd VimEnter * hi Normal guibg=#1a1b26 ctermbg=235
+          autocmd VimEnter * hi NonText guibg=#1a1b26 ctermbg=235
+          autocmd VimEnter * hi LineNr guibg=#1a1b26 ctermbg=235
+          autocmd VimEnter * hi SignColumn guibg=#1a1b26 ctermbg=235
+          autocmd VimEnter * hi EndOfBuffer guibg=#1a1b26 ctermbg=235
+          
+          " Floating windows and popups get a slightly different background
+          autocmd VimEnter * hi NormalFloat guibg=#16161e ctermbg=234
+          autocmd VimEnter * hi FloatBorder guibg=#16161e ctermbg=234
+        augroup END
+      ]])
+      
       -- Add any additional options here
     '';
     
@@ -157,13 +174,16 @@ with lib;
           priority = 1000,
           opts = {
             style = "night", -- night, storm, day, moon
-            transparent = false,
+            transparent = false, -- Use solid background for better readability
             terminal_colors = true,
             styles = {
               comments = { italic = true },
               keywords = { italic = true },
               functions = {},
               variables = {},
+              -- Use solid backgrounds for better contrast
+              sidebars = "dark",
+              floats = "dark",
             },
           },
         },
@@ -178,7 +198,15 @@ with lib;
               light = "latte",
               dark = "mocha",
             },
+            transparent_background = false, -- Use solid background
             terminal_colors = true,
+            integrations = {
+              cmp = true,
+              gitsigns = true,
+              nvimtree = true,
+              telescope = true,
+              treesitter = true,
+            },
           },
         },
         

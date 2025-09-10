@@ -1,0 +1,11 @@
+// Custom XKB layout for Caps Lock behavior
+// Caps Lock alone = Escape
+// Shift + Caps Lock = F13 (available for custom bindings)
+
+default partial modifier_keys
+xkb_symbols "caps_escape_shift" {
+    replace key <CAPS> {
+        type[Group1] = "TWO_LEVEL",
+        symbols[Group1] = [ Escape, F13 ]
+    };
+};

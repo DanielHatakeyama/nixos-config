@@ -64,7 +64,38 @@ with lib;
       wlogout          # Logout menu
       wtype            # Wayland typing tool for key injection
       jq               # JSON processor for Hyprland commands
+      # Standard cursor themes
+      vanilla-dmz      # Simple, standard cursor theme
+      adwaita-icon-theme  # GNOME cursor theme
+      capitaine-cursors # Mac like cursor
+      # Nice fonts for ricing
+      jetbrains-mono
+      nerd-fonts.jetbrains-mono
+      nerd-fonts.symbols-only
+      # Wallpaper utilities
+      wget             # For downloading wallpapers
+      curl             # Alternative download tool
+
     ];
+
+    # Declaritively create cursor settings
+    home.pointerCursor = {
+      package = pkgs.capitaine-cursors; # Theme
+      name = "capitaine-cursors";       # "capitaine-cursors-white" for light
+      size = 24;
+      gtk.enable = true;
+      x11.enable = true;
+    };
+
+    # Ensure GTK also uses the correct cursor theme
+    gtk = {
+      enable = true;
+      cursorTheme = {
+        package = pkgs.capitaine-cursors;
+        name = "capitaine-cursors";
+        size = 24;
+      };
+    };
 
     # Enable Hyprland
     wayland.windowManager.hyprland = {
@@ -76,7 +107,24 @@ with lib;
       settings = {
         # Monitor configuration - adjust as needed
         monitor = [
-          ",preferred,auto,auto"
+          "eDP-1,1920x1200@60,0x0,1.0"  # 1x scale for maximum screen real estate
+        ];
+
+        # Ensure apps run natively on Wayland (Electron, Qt, GTK, etc.)
+        # These env vars are applied to Hyprland and all child processes.
+        env = [
+          "XDG_CURRENT_DESKTOP,Hyprland"
+          "XDG_SESSION_TYPE,wayland"
+          "ELECTRON_OZONE_PLATFORM_HINT,auto"
+          "NIXOS_OZONE_WL,1"
+          "OZONE_PLATFORM_HINT,auto"
+          "GTK_USE_PORTAL,1"
+          "QT_QPA_PLATFORM,wayland;xcb"
+          "MOZ_ENABLE_WAYLAND,1"
+          "QT_WAYLAND_DISABLE_WINDOWDECORATION,1"
+          "SDL_VIDEODRIVER,wayland"
+          "XCURSOR_THEME,capitaine-cursors"
+          "XCURSOR_SIZE,24"
         ];
 
         # Input configuration - your keyboard mapping
@@ -89,6 +137,8 @@ with lib;
 
           follow_mouse = 1;
           sensitivity = 0; # -1.0 - 1.0, 0 means no modification
+          
+          # Disable cursor warping when focusing windows - prevents wrapping behavior
 
           touchpad = {
             natural_scroll = true;
@@ -97,47 +147,54 @@ with lib;
           };
         };
 
+        # Cursor configuration
+        cursor = {
+          default_monitor = "";
+          zoom_factor = 1.0;
+          zoom_rigid = false;
+        };
+
         # General configuration
         general = {
-          gaps_in = config.djh.hyprland.gaps;
-          gaps_out = config.djh.hyprland.gaps * 2;
-          border_size = config.djh.hyprland.borderSize;
-          "col.active_border" = "rgba(cba6f7ff) rgba(89b4faff) 45deg"; # Catppuccin purple/blue
-          "col.inactive_border" = "rgba(585b70ff)"; # Catppuccin surface2
+          gaps_in = 4;
+          gaps_out = 8;
+          border_size = 2;
+          "col.active_border" = "rgba(89b4faff) rgba(cba6f7ff) 45deg"; # Clean blue to purple gradient
+          "col.inactive_border" = "rgba(313244ff)"; # Subtle gray
           layout = "dwindle"; # BSP-like layout
           allow_tearing = false;
         };
 
         # Decoration settings
         decoration = {
-          rounding = 8;
+          rounding = 12;
           
           blur = {
             enabled = true;
-            size = 8;
-            passes = 3;
+            size = 3;
+            passes = 1;
             new_optimizations = true;
           };
+        };
 
-          drop_shadow = true;
-          shadow_range = 4;
-          shadow_render_power = 3;
-          "col.shadow" = "rgba(1a1a1aee)";
+        # Miscellaneous behavior tweaks
+        misc = {
+          disable_hyprland_logo = true;       # no splash/logo
+          disable_splash_rendering = true;
+          focus_on_activate = true;
+          # Force new windows to open on current workspace, not last active
+          new_window_takes_over_fullscreen = 0;
+          initial_workspace_tracking = 1;
+        };
+
+        # Disable on-screen debug/error overlay at the top-left
+        debug = {
+          overlay = false;
         };
 
         # Animation configuration
         animations = {
-          enabled = true;
-          bezier = "myBezier, 0.05, 0.9, 0.1, 1.05";
-          
-          animation = [
-            "windows, 1, 7, myBezier"
-            "windowsOut, 1, 7, default, popin 80%"
-            "border, 1, 10, default"
-            "borderangle, 1, 8, default"
-            "fade, 1, 7, default"
-            "workspaces, 1, 6, default"
-          ];
+          enabled = false; # Disabled per user preference
         };
 
         # Layout configuration (dwindle = BSP-like)
@@ -148,39 +205,25 @@ with lib;
           smart_resizing = false;
         };
 
-        # Window rules for application-specific behavior
-        windowrule = [
-          # VS Code / Cursor -> workspace 1 (code)
-          "workspace 1 silent,^(code)$"
-          "workspace 1 silent,^(cursor)$"
-          
-          # Browser -> workspace 2 (browser)  
-          "workspace 2 silent,^(zen-browser)$"
-          "workspace 2 silent,^(firefox)$"
-          "workspace 2 silent,^(torbrowser)$"
-          
-          # Terminal -> workspace 3 (terminal)
-          "workspace 3 silent,^(kitty)$"
-          "workspace 3 silent,^(org.gnome.Console)$"
-          
-          # Chat -> workspace 4 (chat)
-          "workspace 4 silent,^(discord)$"
-          "workspace 4 silent,^(slack)$"
-          
+        # Window rules for application-specific behavior (v2 syntax)
+        windowrulev2 = [
           # Float certain applications
-          "float,^(pavucontrol)$"
-          "float,^(rofi)$"
-          "float,^(wlogout)$"
+          "float,class:^(pavucontrol)$"
+          "float,class:^(rofi)$"
+          "float,class:^(wlogout)$"
           
-          # Opacity rules (matching yabai)
-          "opacity 0.9 0.9,^(kitty)$"
+          # Default floating window size and center position
+          "size 800 600,floating:1"
+          "center,floating:1"
+          
+          # Removed kitty opacity rule - now handled dynamically by kitty itself
         ];
 
         # Key bindings - replicating your skhd configuration exactly
         bind = [
           # Window focus (matching skhd cmd+hjkl -> Super+hjkl after key swap)
           "SUPER, h, movefocus, l"
-          "SUPER, j, movefocus, d" 
+          "SUPER, j, movefocus, d"
           "SUPER, k, movefocus, u"
           "SUPER, l, movefocus, r"
 
@@ -221,29 +264,53 @@ with lib;
           "SUPER, f, fullscreen, 0"           # Fullscreen toggle
           "SUPER, m, fullscreen, 1"           # Maximize toggle
 
-          # Float toggle (matching skhd alt+f)
-          "ALT, f, togglefloating"
-          "ALT, f, centerwindow"
+          # Float toggle - creates a centered floating window
+          "SUPER, t, togglefloating"
 
           # Terminal launcher
           "SUPER, Return, exec, ${config.djh.hyprland.terminal}"
 
-          # Application launcher
-          "ALT, r, exec, rofi -show drun"
+          # Application launcher (Spotlight-like)
+          "SUPER, space, exec, rofi -show drun"
 
           # Recent workspace (matching skhd alt+tab)
           "ALT, Tab, workspace, previous"
 
-          # Modal systems (matching skhd exactly)
-          "ALT, r, exec, ${config.home.homeDirectory}/.config/home-manager/scripts/hyprland-window-manager.sh resize-mode"
-          "ALT, p, exec, ${config.home.homeDirectory}/.config/home-manager/scripts/hyprland-window-manager.sh resize-mode" 
-          "ALT, w, exec, ${config.home.homeDirectory}/.config/home-manager/scripts/hyprland-window-manager.sh wasd-mode"
+          # Simple resize bindings (Super + uiop)
+          "SUPER, u, resizeactive, -50 0"      # Shrink width (left)
+          "SUPER, p, resizeactive, 50 0"       # Expand width (right) 
+          "SUPER, o, resizeactive, 0 -50"      # Shrink height (up)
+          "SUPER, i, resizeactive, 0 50"       # Expand height (down)
+
+          # Direct resize bindings (Super + Shift + arrow keys)
+          "SUPER_SHIFT, Left, resizeactive, -50 0"
+          "SUPER_SHIFT, Right, resizeactive, 50 0"
+          "SUPER_SHIFT, Up, resizeactive, 0 -50"
+          "SUPER_SHIFT, Down, resizeactive, 0 50"
+
+          # Browser launcher (default Firefox)
+          "SUPER, b, exec, firefox"
+
+          # Zen browser specific keybindings - tab navigation
+          "CTRL, j, exec, ${pkgs.writeShellScript "zen-ctrl-j" ''
+            if hyprctl activewindow -j | ${pkgs.jq}/bin/jq -r '.class' | grep -q '^zen$'; then
+              ${pkgs.wtype}/bin/wtype -M ctrl -P Tab -m ctrl
+            fi
+          ''}"
+          "CTRL, k, exec, ${pkgs.writeShellScript "zen-ctrl-k" ''
+            if hyprctl activewindow -j | ${pkgs.jq}/bin/jq -r '.class' | grep -q '^zen$'; then
+              ${pkgs.wtype}/bin/wtype -M ctrl -M shift -P Tab -m shift -m ctrl
+            fi
+          ''}"
 
           # Screenshot
           "SUPER, Print, exec, grim -g \"$(slurp)\" - | swappy -f -"
           
           # System controls
-          "SUPER, Escape, exec, wlogout"
+          "SUPER, Delete, exec, wlogout"
+          
+          # Toggle waybar visibility
+          "SUPER_SHIFT, f, exec, pkill -SIGUSR1 waybar"
         ];
 
         # Mouse bindings
@@ -271,7 +338,10 @@ with lib;
         exec-once = [
           "waybar"
           "dunst"
-          "hyprpaper"
+          # Force set cursor theme to capitaine-cursors
+          "hyprctl setcursor capitaine-cursors 24"
+          # Download and set wallpaper
+          "${config.home.homeDirectory}/.config/home-manager/scripts/setup-wallpaper.sh"
           "${config.djh.hyprland.terminal}" # Start terminal on workspace 3
         ];
       };
@@ -336,31 +406,89 @@ with lib;
       };
       style = ''
         * {
-          font-family: "FiraCode Nerd Font", monospace;
+          font-family: "JetBrains Mono", "Symbols Nerd Font", monospace;
           font-size: 13px;
+          font-weight: 500;
+          min-height: 0;
         }
         
         window#waybar {
-          background-color: rgba(30, 30, 46, 0.9);
+          background: rgba(17, 17, 27, 0.8);
           color: #cdd6f4;
-          border-bottom: 3px solid rgba(203, 166, 247, 0.8);
+          border: 2px solid rgba(137, 180, 250, 0.3);
+          border-radius: 12px;
+          margin: 8px 8px 0px 8px;
+          padding: 0px;
+        }
+        
+        #workspaces {
+          background: rgba(30, 30, 46, 0.4);
+          margin: 4px 8px;
+          border-radius: 8px;
+          padding: 2px;
         }
         
         #workspaces button {
-          padding: 0 5px;
-          background-color: transparent;
+          padding: 6px 12px;
+          background: transparent;
           color: #6c7086;
-          border-radius: 0;
+          border-radius: 6px;
+          margin: 2px;
+          transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         
         #workspaces button.active {
-          color: #cba6f7;
-          background-color: rgba(203, 166, 247, 0.2);
+          color: #11111b;
+          background: linear-gradient(45deg, #89b4fa, #cba6f7);
+          box-shadow: 0 2px 8px rgba(137, 180, 250, 0.3);
         }
         
         #workspaces button:hover {
-          background-color: rgba(203, 166, 247, 0.1);
-          color: #cba6f7;
+          background: rgba(137, 180, 250, 0.15);
+          color: #89b4fa;
+        }
+
+        #window {
+          background: rgba(30, 30, 46, 0.4);
+          color: #f38ba8;
+          font-weight: 600;
+          margin: 4px 8px;
+          padding: 8px 16px;
+          border-radius: 8px;
+        }
+
+        #clock {
+          background: rgba(30, 30, 46, 0.4);
+          color: #94e2d5;
+          font-weight: 600;
+          margin: 4px 8px;
+          padding: 8px 16px;
+          border-radius: 8px;
+        }
+
+        #pulseaudio, #network, #battery {
+          background: rgba(30, 30, 46, 0.4);
+          padding: 8px 12px;
+          margin: 4px 4px;
+          border-radius: 8px;
+          color: #a6e3a1;
+          font-weight: 500;
+        }
+
+        #tray {
+          background: rgba(30, 30, 46, 0.4);
+          padding: 8px 12px;
+          margin: 4px 8px;
+          border-radius: 8px;
+        }
+
+        #tray > .passive {
+          -gtk-icon-effect: dim;
+        }
+
+        #tray > .needs-attention {
+          -gtk-icon-effect: highlight;
+          background-color: rgba(251, 73, 52, 0.3);
         }
       '';
     };
@@ -376,6 +504,27 @@ with lib;
         drun-display-format = "{name}";
         disable-history = false;
         sidebar-mode = false;
+        font = "JetBrains Mono 12";
+        width = 600;
+        height = 400;
+        location = 0;
+        xoffset = 0;
+        yoffset = 0;
+        columns = 1;
+        fixed-num-lines = true;
+        hide-scrollbar = true;
+        terminal = "kitty";
+        ssh-client = "ssh";
+        ssh-command = "{terminal} -e {ssh-client} {host}";
+        run-command = "{cmd}";
+        run-list-command = "";
+        run-shell-command = "{terminal} -e {cmd}";
+        window-command = "xkill -id {window}";
+        drun-match-fields = "name,generic,exec,categories";
+        drun-categories = "";
+        window-match-fields = "all";
+        icon-theme = "Papirus-Dark";
+        application-fallback-icon = "";
       };
     };
 

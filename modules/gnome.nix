@@ -36,19 +36,15 @@ with lib;
     home.packages = with pkgs; [
       gnome-tweaks
       dconf-editor
-      # Tiling window manager extensions
-      gnomeExtensions.forge           # BSP tiling window manager
-      gnomeExtensions.pop-shell       # Auto-tiling alternative
-      # Additional packages for advanced window management
+      # Additional packages for advanced window management scripts
       wmctrl           # Window management control
       xdotool          # X11 automation (for some advanced scripts)
       libnotify        # Desktop notifications for mode feedback
       glib             # Includes gdbus for D-Bus communication with GNOME Shell
       xorg.setxkbmap   # Backup keyboard mapping tool
     ] ++ optionals config.djh.gnome.enableTilingExtensions [
-      # Additional tiling-related packages
-      gnomeExtensions.workspace-indicator
-      gnomeExtensions.auto-move-windows
+      # Use only Pop Shell to provide tiling; avoid Forge to reduce conflicts
+      gnomeExtensions.pop-shell
     ];
 
     # Ensure keyboard mapping is applied on startup
@@ -87,10 +83,20 @@ with lib;
 
     # GNOME Extensions configuration (declarative)
     dconf.settings = {
+      # IBus can steal Super+Space; disable its triggers
+      "org/freedesktop/ibus/general/hotkey" = {
+        triggers = [];
+        next-engine = [];
+        previous-engine = [];
+        switch-input-source = [];
+      };
       # Keyboard layout and key mapping configuration
       "org/gnome/desktop/input-sources" = {
         # Swap Alt and Super keys system-wide AND map Caps Lock to Escape
         xkb-options = [ "altwin:swap_alt_win" "caps:escape" ];
+  # Free Super+Space from input source switching so we can use it for launcher
+  switch-input-source = [];
+  switch-input-source-backward = [];
       };
 
       # GNOME Shell keybindings (disable conflicting defaults)
@@ -119,21 +125,16 @@ with lib;
         # Enable workspace switcher in overview  
         workspace-switcher-should-show = true;
       } // (if config.djh.gnome.enableTilingExtensions then {
-        # Enable tiling extensions - Try Pop Shell for better auto-tiling
+        # Enable only Pop Shell for tiling to keep the bar clean and stable
         enabled-extensions = [
-          "pop-shell@system76.com"      # Pop Shell auto-tiling
-          "forge@jmmaranan.com"          # Forge BSP tiling (fallback)
-          "workspace-indicator@gnome-shell-extensions.gcampax.github.com"
-          "auto-move-windows@gnome-shell-extensions.gcampax.github.com"
+          "pop-shell@system76.com"
         ];
       } else {
         # Basic extensions only
-        enabled-extensions = [
-          "workspace-indicator@gnome-shell-extensions.gcampax.github.com" 
-        ];
+        enabled-extensions = [ ];
       });
 
-      # Pop Shell extension settings (better auto-tiling)
+      # Pop Shell extension settings (tiling)
       "org/gnome/shell/extensions/pop-shell" = {
         # Enable auto-tiling
         tile-by-default = true;
@@ -148,6 +149,9 @@ with lib;
         show-title = false;
         # Activate hint mode
         hint-color-rgba = "rgba(251, 184, 108, 1)";
+        # Avoid doing anything to the top bar
+        show-tiling-hud = false;
+        show-workspace-indicator = false;
       };
 
       # Forge extension settings (comprehensive yabai-like tiling) - Fallback
@@ -242,7 +246,7 @@ with lib;
       "org/gnome/desktop/interface" = {
         gtk-theme = "Graphite-Dark";
         icon-theme = "Papirus-Dark";
-        cursor-theme = "Adwaita";
+        cursor-theme = "capitaine-cursors";
         # Show weekday in top bar (like macOS)
         clock-show-weekday = true;
         # Enable hot corners for activities overview
@@ -337,8 +341,8 @@ with lib;
         move-to-monitor-up = [ "<Alt><Shift><Ctrl>k" ];
         move-to-monitor-down = [ "<Alt><Shift><Ctrl>j" ];
         
-        # Activities overview (replaces Mission Control)
-        panel-main-menu = [ "<Super>space" ];
+  # Activities overview (replaces Mission Control) - free Super+Space for launcher
+  panel-main-menu = [];
         
         # Show desktop (equivalent to F11 on macOS)
         show-desktop = [ "<Super>d" ];
@@ -365,6 +369,7 @@ with lib;
         search = [];
         www = [];
         screensaver = [];  # This disables Super+L screen lock
+  panel-main-menu = []; # Free Super+Space here (correct schema for some versions)
         
         custom-keybindings = [
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
@@ -377,6 +382,8 @@ with lib;
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom7/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom8/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom9/"
+          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom10/"
+          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom11/"
         ];
       };
       
@@ -422,6 +429,22 @@ with lib;
         name = "Launch Terminal";
       };
 
+      # Spotlight-like launcher: Super+Space runs rofi
+      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom10" = {
+        binding = "<Super>space";
+        command = "rofi -show drun";
+        name = "Launcher (Rofi)";
+      };
+
+      # Also bind Alt+Space to rofi to account for Alt↔Super swap
+      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom11" = {
+        binding = "<Alt>space";
+        command = "rofi -show drun";
+        name = "Launcher (Rofi Alt)";
+      };
+
+  # Note: Avoid binding Super+/ to prevent conflicts with Pop Shell shortcuts
+
       # Window focus commands (bypassing GNOME's broken focus system)
       "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom6" = {
         binding = "<Super>h";
@@ -451,7 +474,7 @@ with lib;
       # Note: org/gnome/shell settings are above in the GNOME Extensions section
 
       # Mutter (GNOME's window manager) settings - Enhanced for tiling
-      "org/gnome/mutter" = {
+  "org/gnome/mutter" = {
         # Enable experimental features for better tiling support
         experimental-features = [ "scale-monitor-framebuffer" "rt-scheduler" ];
         
@@ -476,7 +499,7 @@ with lib;
         # Auto-maximize behavior
         auto-maximize = false; # Disable to allow tiling control
         
-        # Window animations (matching yabai: window_animation_duration 0.0)
+  # Keep animations simple to reduce jitter with tiling
         resize-with-right-button = true;
         
         # Overlay key behavior (disable Super key overlay to avoid conflicts)

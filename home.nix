@@ -24,7 +24,8 @@
   nixpkgs.config.allowUnfree = true;
 
   djh.zen.enable = true;
-  djh.gnome.enable = false;              # Disabled - switching to Hyprland
+  djh.gnome.enable = true;               # Enable GNOME tweaks/keybindings too
+  djh.gnome.enableTilingExtensions = true;  # Enable Pop Shell tiling in GNOME
   djh.hyprland.enable = true;            # Primary desktop environment
   djh.kitty.enable = true;
   djh.neovim.enable = true;  # Re-enabled with standalone configuration
@@ -78,7 +79,20 @@
   #  /etc/profiles/per-user/djh/etc/profile.d/hm-session-vars.sh
   #
   home.sessionVariables = {
-    # EDITOR = "emacs";
+    BROWSER = "firefox";
+    DEFAULT_BROWSER = "firefox";
+  };
+
+  # Set Firefox as default browser
+  xdg.mimeApps = {
+    enable = true;
+    defaultApplications = {
+      "text/html" = "firefox.desktop";
+      "x-scheme-handler/http" = "firefox.desktop";
+      "x-scheme-handler/https" = "firefox.desktop";
+      "x-scheme-handler/about" = "firefox.desktop";
+      "x-scheme-handler/unknown" = "firefox.desktop";
+    };
   };
 
   # Let Home Manager install and manage itself.
