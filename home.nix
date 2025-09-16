@@ -8,6 +8,7 @@
     ./programs/vscode.nix
     ./programs/zsh.nix
     ./modules/desktop-integration.nix
+    ./modules/gaming.nix
     ./modules/gnome.nix
     ./modules/hyprland.nix
     ./modules/kitty.nix
@@ -32,6 +33,7 @@
   djh.tmux.enable = true;
   djh.tridactyl.enable = true;  # Browser vim-like navigation
   djh.desktop-integration.enable = true;
+  djh.gaming.enable = true;              # Enable Steam, Minecraft with enhanced auth
 
   # This value determines the Home Manager release that your configuration is
   # compatible with. This helps avoid breakage when a new Home Manager release
