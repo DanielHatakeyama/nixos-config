@@ -7,6 +7,7 @@
     ./programs/git.nix
     ./programs/vscode.nix
     ./programs/zsh.nix
+    ./modules/audio.nix
     ./modules/desktop-integration.nix
     ./modules/gaming.nix
     ./modules/gnome.nix
@@ -34,6 +35,7 @@
   djh.tridactyl.enable = true;  # Browser vim-like navigation
   djh.desktop-integration.enable = true;
   djh.gaming.enable = true;              # Enable Steam, Minecraft with enhanced auth
+  djh.audio.enable = true;               # Enhanced audio with browser microphone support
 
   # This value determines the Home Manager release that your configuration is
   # compatible with. This helps avoid breakage when a new Home Manager release

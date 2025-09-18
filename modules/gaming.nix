@@ -32,7 +32,7 @@ with lib;
       webkitgtk_4_1     # For embedded browsers in launchers (Microsoft auth)
       xdg-utils         # For proper URL/browser handling
       libsecret         # For secure credential storage
-      gnome.gnome-keyring  # Keyring for storing authentication tokens
+      gnome-keyring     # Keyring for storing authentication tokens
       
       # Gaming utilities
       gamemode          # Performance optimization
@@ -69,7 +69,7 @@ with lib;
         minecraft-auth = {
           name = "Minecraft (Enhanced Auth)";
           comment = "Minecraft launcher with enhanced Microsoft authentication";
-          exec = "${pkgs.prismlauncher}/bin/prismlauncher --java-args='-Djava.net.useSystemProxies=true -Djavafx.platform=gtk'";
+          exec = "${pkgs.prismlauncher}/bin/prismlauncher --java-args=\"-Djava.net.useSystemProxies=true -Djavafx.platform=gtk\"";
           icon = "prismlauncher";
           categories = [ "Game" "AdventureGame" ];
           type = "Application";
