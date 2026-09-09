@@ -14,10 +14,6 @@ in
     programs.claude-code = {
       enable = true;
       package = pkgs.claude-code;
-
-      settings = {
-        autoUpdates = false; # Don't self update, nix controls version
-      };
     };
   };
 }
