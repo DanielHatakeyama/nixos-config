@@ -34,7 +34,6 @@
       hm = "home-manager";
       cd = "z";  # Alias cd to zoxide
       nix-shell = "nix-shell-zsh";  # Use zsh in nix-shell by default
-      steam = "steam-x11";  # Use X11 wrapper for stable Steam UI rendering
       audio = "pavucontrol";  # Quick access to audio control GUI
       audio-list = "pactl list short sinks";  # List available audio outputs
       app = "app-launcher";  # Vim-friendly app launcher
@@ -42,7 +41,7 @@
     
     # Add visual indicator when in nix-shell or nix develop
     # Also set speakers as default audio output on shell startup
-    initExtra = ''
+    initContent = ''
       # Set laptop speakers as default audio output
       if command -v pactl &> /dev/null; then
         pactl set-default-sink alsa_output.pci-0000_00_1f.3-platform-skl_hda_dsp_generic.HiFi__Speaker__sink 2>/dev/null || true

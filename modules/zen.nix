@@ -39,15 +39,15 @@ let
       nspr
       nss
       pango
-      xorg.libX11
-      xorg.libXcomposite
-      xorg.libXdamage
-      xorg.libXext
-      xorg.libXfixes
-      xorg.libXrandr
-      xorg.libXrender
-      xorg.libXt
-      xorg.libXtst
+      libx11
+      libxcomposite
+      libxdamage
+      libxext
+      libxfixes
+      libxrandr
+      libxrender
+      libxt
+      libxtst
     ];
     
     installPhase = ''

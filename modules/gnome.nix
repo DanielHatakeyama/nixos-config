@@ -41,7 +41,7 @@ with lib;
       xdotool          # X11 automation (for some advanced scripts)
       libnotify        # Desktop notifications for mode feedback
       glib             # Includes gdbus for D-Bus communication with GNOME Shell
-      xorg.setxkbmap   # Backup keyboard mapping tool
+      setxkbmap   # Backup keyboard mapping tool
     ] ++ optionals config.djh.gnome.enableTilingExtensions [
       # Use only Pop Shell to provide tiling; avoid Forge to reduce conflicts
       gnomeExtensions.pop-shell
@@ -74,7 +74,7 @@ with lib;
           
           # For X11 sessions, also use setxkbmap as backup
           if [ "$XDG_SESSION_TYPE" != "wayland" ]; then
-            ${pkgs.xorg.setxkbmap}/bin/setxkbmap -option caps:escape,altwin:swap_alt_win
+            ${pkgs.setxkbmap}/bin/setxkbmap -option caps:escape,altwin:swap_alt_win
           fi
         ''}";
       };
