@@ -42,8 +42,8 @@ in
 
       # Extract the generation number from the home-manager profile symlink.
       # The symlink target is named: home-manager-<N>-link
-      _profile_dir="''${XDG_STATE_HOME:-${config.home.homeDirectory}/.local/state}/home-manager/profiles"
-      _link=$(${pkgs.coreutils}/bin/readlink "$_profile_dir/home-manager" 2>/dev/null || true)
+      _profile="''${XDG_STATE_HOME:-${config.home.homeDirectory}/.local/state}/nix/profiles/home-manager"
+      _link=$(${pkgs.coreutils}/bin/readlink "$_profile" 2>/dev/null || true)
       _base=$(${pkgs.coreutils}/bin/basename "$_link")
       _tmp="''${_base%-*}"   # home-manager-<N>-link → home-manager-<N>
       _gen="''${_tmp##*-}"   # home-manager-<N>     → <N>
@@ -52,7 +52,10 @@ in
       $DRY_RUN_CMD ${pkgs.git}/bin/git -C "$_hmdir" commit \
         -m "chore: switch to home-manager generation $_gen"
 
-      $DRY_RUN_CMD ${pkgs.git}/bin/git -C "$_hmdir" push || \
+      # Push using the nix store openssh so ssh is available in the
+      # restricted activation environment (no system PATH).
+      $DRY_RUN_CMD env GIT_SSH_COMMAND="${pkgs.openssh}/bin/ssh" \
+        ${pkgs.git}/bin/git -C "$_hmdir" push || \
         echo "hm-auto-commit: warning: git push failed. Commit is saved locally."
     '';
   };
