@@ -54,7 +54,6 @@
     #   inputs.nixpkgs.follows = "nixpkgs";
     # };
 
-    # [TODO: Fix this before switch]
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";

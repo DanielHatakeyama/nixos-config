@@ -1,9 +1,10 @@
 { config, lib, pkgs, ... }:
 
 
-# TODO: Bro i hate this we need to have a normal neovim configuration that nix will pull / symlink with home manager.
-# Also neovim should be a system wide configuration
-# Maybe add some logic to move around neovim, tmux, and system with super hjkl
+# FUTURE: Replace the inline Lua strings in this module with a standalone Neovim
+# config directory (e.g. config/nvim/) tracked in this repo and managed via
+# home.file symlinks. That allows editing Neovim config directly without running
+# home-manager switch, and keeps the Lua separate from the Nix module system.
 
 with lib;
 
