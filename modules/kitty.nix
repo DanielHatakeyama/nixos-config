@@ -1,5 +1,10 @@
 { config, lib, pkgs, ... }:
 
+
+# It might be time to try a different terminal. I should at least see if i can do a speed comparison. 
+# TODO: remove the escape sudo behavior  i hate it.
+
+
 with lib;
 
 {
@@ -23,7 +28,7 @@ with lib;
     
     theme = mkOption {
       type = types.nullOr types.str;
-      default = null;
+      default = "Catppuccin-Mocha";
       description = "Kitty theme name from kitty-themes collection";
       example = "SpaceGray_Eighties";
     };
@@ -57,16 +62,23 @@ with lib;
       
       # Key mappings for better editing experience
       keybindings = {
+        
         # Ctrl+Backspace to delete word (like Windows/Mac)
         "ctrl+backspace" = "send_text all \\x17";  # Send Ctrl+W to delete word
-        # Ctrl+Delete to delete word forward  
+
+        # IDK What this vibe code is
+        # Ctrl+Delete to delete word forward
         "ctrl+delete" = "send_text all \\x1b\\x64";  # Send Alt+d to delete word forward
+        
         # Additional useful bindings
         "ctrl+left" = "send_text all \\x1bb";   # Move word left
         "ctrl+right" = "send_text all \\x1bf";  # Move word right
         
         # Disable Ctrl+L from clearing screen
         "ctrl+l" = "no_op";
+
+        # Disable annoying sudo escape behavior
+        "esc" = "no_op";
       };
       
       # Terminal settings based on your archived config, adapted for Linux

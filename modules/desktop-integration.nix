@@ -30,6 +30,34 @@ with lib;
       mimeType = [ "x-scheme-handler/obsidian" ];
     };
     
+    # Google Meet as standalone app using Chromium
+    xdg.desktopEntries.google-meet = {
+      name = "Google Meet";
+      comment = "Google Meet video conferencing";
+      exec = "${pkgs.chromium}/bin/chromium --app=https://meet.google.com --enable-features=WebRTCPipeWireCapturer";
+      icon = "google-chrome";
+      terminal = false;
+      categories = [ "Network" "AudioVideo" "Chat" ];
+      settings = {
+        StartupNotify = "true";
+        StartupWMClass = "meet.google.com";
+      };
+    };
+    
+    # Zoom with proper audio integration
+    xdg.desktopEntries.zoom = {
+      name = "Zoom";
+      comment = "Video conferencing with enhanced audio support";
+      exec = "${pkgs.zoom-us}/bin/zoom";
+      icon = "zoom";
+      terminal = false;
+      categories = [ "Network" "AudioVideo" "Chat" ];
+      settings = {
+        StartupNotify = "true";
+        StartupWMClass = "zoom";
+      };
+    };
+    
     # Also manually copy desktop files from nix packages to ensure they work
     home.activation.copyDesktopFiles = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       # Copy desktop files from problematic Nix packages

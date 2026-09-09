@@ -18,6 +18,7 @@ BACKUP_ENABLED=${BACKUP_ENABLED:-false}
 AUTO_COMMIT=${AUTO_COMMIT:-false}
 AUTO_PUSH=${AUTO_PUSH:-false}
 COMMIT_MESSAGE_PREFIX="[auto]"
+HM_FLAKE_TARGET=${HM_FLAKE_TARGET:-"$REPO_DIR#djh"}
 
 # Function to print colored output
 print_status() {
@@ -137,7 +138,7 @@ main() {
     
     # Test configuration first
     print_status "Testing Home Manager configuration..."
-    if home-manager build; then
+    if home-manager build --flake "$HM_FLAKE_TARGET"; then
         print_success "Configuration test passed"
     else
         print_error "Configuration test failed. Aborting switch."
@@ -146,7 +147,7 @@ main() {
     
     # Apply configuration
     print_status "Applying Home Manager configuration..."
-    if home-manager switch "$@"; then
+    if home-manager switch --flake "$HM_FLAKE_TARGET" "$@"; then
         print_success "Home Manager configuration applied successfully"
     else
         print_error "Home Manager switch failed"
@@ -184,6 +185,7 @@ ENVIRONMENT VARIABLES:
     AUTO_COMMIT=true    Enable automatic commits
     AUTO_PUSH=true      Enable automatic push
     BACKUP_ENABLED=true Enable backups
+    HM_FLAKE_TARGET=... Override flake target (default: ~/.config/home-manager#djh)
 
 Examples:
     $0                           # Basic switch
@@ -216,7 +218,7 @@ while [[ $# -gt 0 ]]; do
         --dry-run)
             print_status "Dry run mode - testing configuration only"
             cd "$REPO_DIR"
-            home-manager build
+            home-manager build --flake "$HM_FLAKE_TARGET"
             exit $?
             ;;
         *)

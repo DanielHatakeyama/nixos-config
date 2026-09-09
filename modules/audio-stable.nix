@@ -27,42 +27,13 @@ with lib;
       
       # Utilities for troubleshooting
       alsa-utils      # aplay, amixer, etc.
+      pulseaudio      # For pactl command
     ];
 
-    # XDG portals for proper file dialogs and desktop integration
-    xdg.portal = {
-      enable = true;
-      extraPortals = with pkgs; [
-        xdg-desktop-portal-hyprland
-        xdg-desktop-portal-gtk
-      ];
-      config = {
-        common = {
-          default = ["gtk"];
-          "org.freedesktop.impl.portal.Screenshot" = ["hyprland"];
-          "org.freedesktop.impl.portal.ScreenCast" = ["hyprland"];
-          "org.freedesktop.impl.portal.FileChooser" = ["gtk"];
-          "org.freedesktop.impl.portal.Camera" = ["gtk"];
-          "org.freedesktop.impl.portal.Microphone" = ["gtk"];
-        };
-        hyprland = {
-          default = ["gtk" "hyprland"];
-        };
-      };
-    };
-
-    # Environment variables for audio and screen sharing
+    # Minimal browser environment variables
     home.sessionVariables = {
       # Enable WebRTC to use PipeWire 
       WEBRTC_USE_PIPEWIRE = "1";
-      
-      # Screen sharing support for Wayland
-      XDG_CURRENT_DESKTOP = "Hyprland";
-      XDG_SESSION_DESKTOP = "Hyprland";
-      XDG_SESSION_TYPE = "wayland";
-      
-      # Enable screen sharing for applications
-      NIXOS_XDG_OPEN_USE_PORTAL = "1";
     };
 
     # Desktop entries for easy access
@@ -83,19 +54,6 @@ with lib;
         icon = "multimedia-volume-control";
         categories = [ "AudioVideo" "Settings" ];
         type = "Application";
-      };
-      
-      # Zoom with proper screen sharing support
-      zoom-enhanced = {
-        name = "Zoom (Screen Share)";
-        comment = "Zoom with optimized screen sharing for Hyprland";
-        exec = "env XDG_CURRENT_DESKTOP=Hyprland XDG_SESSION_TYPE=wayland ${pkgs.zoom-us}/bin/zoom";
-        icon = "zoom";
-        categories = [ "Network" "VideoConference" ];
-        type = "Application";
-        settings = {
-          StartupNotify = "true";
-        };
       };
     };
 

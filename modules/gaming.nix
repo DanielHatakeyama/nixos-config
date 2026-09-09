@@ -8,7 +8,7 @@ with lib;
       enable = mkEnableOption "Gaming applications and configuration";
       
       enableSteam = mkOption {
-        type = types.bool;
+       type = types.bool;
         default = true;
         description = "Enable Steam gaming platform";
       };
@@ -119,7 +119,6 @@ with lib;
         inhibit_screensaver=1
         
         [filter]
-        whitelist=steam
         whitelist=prismlauncher
         whitelist=minecraft
         whitelist=java

@@ -55,10 +55,10 @@ with lib;
       grim             # Screenshot tool
       slurp            # Area selection for screenshots
       swappy           # Screenshot editor
-      rofi-wayland     # Application launcher
+      rofi             # Application launcher
       waybar           # Status bar
       dunst            # Notification daemon
-      pavucontrol      # Volume control GUI
+      pulsemixer       # TUI volume control with vim keybinds
       blueman          # Bluetooth manager GUI
       brightnessctl    # Brightness control
       playerctl        # Media control
@@ -106,9 +106,10 @@ with lib;
       xwayland.enable = true;
       
       settings = {
-        # Monitor configuration - adjust as needed
+        # Monitor configuration - explicit for both displays
         monitor = [
-          "eDP-1,1920x1200@60,0x0,1.0"  # 1x scale for maximum screen real estate
+          "eDP-1,1920x1200@60,0x0,1.0"      # Laptop display at 0x0
+          "HDMI-A-1,3840x2160@30,1920x0,1.0"  # External 4K monitor positioned to the right
         ];
 
         # Ensure apps run natively on Wayland (Electron, Qt, GTK, etc.)
@@ -183,8 +184,8 @@ with lib;
           disable_hyprland_logo = true;       # no splash/logo
           disable_splash_rendering = true;
           focus_on_activate = true;
-          # Force new windows to open on current workspace, not last active
-          new_window_takes_over_fullscreen = 0;
+          # Closest current replacement for the removed fullscreen focus behavior
+          on_focus_under_fullscreen = 1;
           initial_workspace_tracking = 1;
         };
 
@@ -206,21 +207,24 @@ with lib;
           smart_resizing = false;
         };
 
-        # Window rules for application-specific behavior (v2 syntax)
-        windowrulev2 = [
+        # Window rules for application-specific behavior
+        windowrule = [
           # Float certain applications
-          "float,class:^(pavucontrol)$"
-          "float,class:^(rofi)$"
-          "float,class:^(wlogout)$"
+          "float on, match:class ^(pavucontrol)$"
+          "float on, match:class ^(rofi)$"
+          "float on, match:class ^(wlogout)$"
+          
+          # VM configuration - always on workspace 10
+          "workspace 10, match:class ^(gnome-boxes)$"
+          "workspace 10, match:class ^\\.gnome-boxes-wrapped$"
+          "workspace 10, match:title ^(.*QEMU.*Windows.*)$"
           
           # Default floating window size and center position
-          "size 800 600,floating:1"
-          "center,floating:1"
-          
-          # Removed kitty opacity rule - now handled dynamically by kitty itself
+          "size 800 600, match:float true"
+          "center on, match:float true"
+
         ];
 
-        # Key bindings - replicating your skhd configuration exactly
         bind = [
           # Window focus (matching skhd cmd+hjkl -> Super+hjkl after key swap)
           "SUPER, h, movefocus, l"
@@ -228,7 +232,7 @@ with lib;
           "SUPER, k, movefocus, u"
           "SUPER, l, movefocus, r"
 
-          # Window movement (matching skhd cmd+shift+hjkl)
+          # Window movement (matching skhd cmd+shift+hjkl) TODO: Have special overide behavior maybe with browser jk, terminal special hjkl for tmux nvim
           "SUPER_SHIFT, h, movewindow, l"
           "SUPER_SHIFT, j, movewindow, d"
           "SUPER_SHIFT, k, movewindow, u"
@@ -244,6 +248,7 @@ with lib;
           "SUPER, 7, workspace, 7"
           "SUPER, 8, workspace, 8"
           "SUPER, 9, workspace, 9"
+          "SUPER, 0, workspace, 10"  # Workspace 10 for VM
 
           # Move window to workspace (matching skhd cmd+shift+1-9)
           "SUPER_SHIFT, 1, movetoworkspace, 1"
@@ -255,10 +260,68 @@ with lib;
           "SUPER_SHIFT, 7, movetoworkspace, 7"
           "SUPER_SHIFT, 8, movetoworkspace, 8"
           "SUPER_SHIFT, 9, movetoworkspace, 9"
+          "SUPER_SHIFT, 0, movetoworkspace, 10"  # Move to workspace 10
 
           # Workspace navigation (matching skhd cmd+ctrl+h/l)
           "SUPER_CTRL, h, workspace, e-1"
           "SUPER_CTRL, l, workspace, e+1"
+
+          # VM toggle - Multiple keybinds for different contexts
+          # Super+Equal: Works when outside VM (Hyprland intercepts before Windows)
+          "SUPER, equal, exec, ${pkgs.writeShellScript "vm-toggle" ''
+            # Get current workspace
+            current=$(${pkgs.hyprland}/bin/hyprctl activeworkspace -j | ${pkgs.jq}/bin/jq -r '.id')
+            
+            # State file to remember the last non-VM workspace
+            state_file="/tmp/hypr-vm-toggle-last-workspace"
+            
+            if [ "$current" = "10" ]; then
+              # We're on VM workspace, go back to saved workspace
+              if [ -f "$state_file" ]; then
+                last_ws=$(cat "$state_file")
+                ${pkgs.hyprland}/bin/hyprctl dispatch workspace "$last_ws"
+              else
+                # No saved workspace, default to workspace 1
+                ${pkgs.hyprland}/bin/hyprctl dispatch workspace 1
+              fi
+            else
+              # We're not on VM workspace, save current and go to VM
+              echo "$current" > "$state_file"
+              ${pkgs.hyprland}/bin/hyprctl dispatch workspace 10
+            fi
+          ''}"
+          
+          # Ctrl+Alt+Equal: Leverages VM's grab-release key (Ctrl+Alt) + workspace toggle
+          # Pressing all three keys releases VM grab and triggers workspace switch
+          "CTRL_ALT, equal, exec, ${pkgs.writeShellScript "vm-toggle-global" ''
+            # Get active window to check if it's the VM
+            active_class=$(${pkgs.hyprland}/bin/hyprctl activewindow -j | ${pkgs.jq}/bin/jq -r '.class')
+            current=$(${pkgs.hyprland}/bin/hyprctl activeworkspace -j | ${pkgs.jq}/bin/jq -r '.id')
+            state_file="/tmp/hypr-vm-toggle-last-workspace"
+            
+            # Check if we're focused on the VM window
+            if [[ "$active_class" == *"virt-manager"* ]] || [[ "$active_class" == *"gnome-boxes"* ]] || [[ "$active_class" == *"qemu"* ]]; then
+              # We're IN the VM, toggle out
+              if [ -f "$state_file" ]; then
+                last_ws=$(cat "$state_file")
+                ${pkgs.hyprland}/bin/hyprctl dispatch workspace "$last_ws"
+              else
+                ${pkgs.hyprland}/bin/hyprctl dispatch workspace 1
+              fi
+            elif [ "$current" = "10" ]; then
+              # We're on workspace 10 but not focused on VM, go back
+              if [ -f "$state_file" ]; then
+                last_ws=$(cat "$state_file")
+                ${pkgs.hyprland}/bin/hyprctl dispatch workspace "$last_ws"
+              else
+                ${pkgs.hyprland}/bin/hyprctl dispatch workspace 1
+              fi
+            else
+              # We're not on VM workspace, save current and go to VM
+              echo "$current" > "$state_file"
+              ${pkgs.hyprland}/bin/hyprctl dispatch workspace 10
+            fi
+          ''}"
 
           # Window management (matching skhd)
           "SUPER_SHIFT, q, killactive"        # Close window
@@ -276,6 +339,12 @@ with lib;
 
           # Recent workspace (matching skhd alt+tab)
           "ALT, Tab, workspace, previous"
+
+          # Monitor focus switching
+          "SUPER, period, focusmonitor, +1"    # Focus next monitor (Super + .)
+          "SUPER, comma, focusmonitor, -1"     # Focus previous monitor (Super + ,)
+          "SUPER_SHIFT, period, movewindow, mon:+1"  # Move window to next monitor
+          "SUPER_SHIFT, comma, movewindow, mon:-1"   # Move window to previous monitor
 
           # Simple resize bindings (Super + uiop)
           "SUPER, u, resizeactive, -50 0"      # Shrink width (left)
@@ -326,6 +395,11 @@ with lib;
           ", XF86AudioPlay, exec, playerctl play-pause"
           ", XF86AudioNext, exec, playerctl next"
           ", XF86AudioPrev, exec, playerctl previous"
+          
+          # Simple audio output switching
+          "SUPER, F1, exec, ~/.config/home-manager/scripts/audio-switch.sh speakers"
+          "SUPER, F2, exec, ~/.config/home-manager/scripts/audio-switch.sh monitor"
+          "SUPER, F3, exec, ~/.config/home-manager/scripts/audio-switch.sh toggle"
         ];
 
         bindel = [
@@ -341,14 +415,38 @@ with lib;
           "dunst"
           # Force set cursor theme to capitaine-cursors
           "hyprctl setcursor capitaine-cursors 24"
-          # Download and set wallpaper
-          "${config.home.homeDirectory}/.config/home-manager/scripts/setup-wallpaper.sh"
           "${config.djh.hyprland.terminal}" # Start terminal on workspace 3
         ];
       };
       
       # Additional configuration from user
       extraConfig = config.djh.hyprland.extraConfig;
+    };
+
+    # Hyprpaper configuration - set wallpapers for all monitors
+    services.hyprpaper = {
+      enable = true;
+
+      settings = {
+        splash = false;
+
+        preload = [
+          "/home/djh/.config/hypr/wallpapers/landscape.png"
+        ];
+
+        wallpaper = [
+          "eDP-1,/home/djh/.config/hypr/wallpapers/landscape.png"
+          "HDMI-A-1,/home/djh/.config/hypr/wallpapers/landscape.png"
+        ];
+      };
+    };
+
+    # Systemd service overrides for hyprpaper to ensure proper startup order
+    systemd.user.services.hyprpaper = {
+      Unit = {
+        After = [ "graphical-session.target" ];
+        PartOf = [ "graphical-session.target" ];
+      };
     };
 
     # Configure supporting applications
@@ -358,7 +456,7 @@ with lib;
         mainBar = {
           layer = "top";
           position = "top";
-          height = 30;
+          height = 46;
           modules-left = [ "hyprland/workspaces" "hyprland/window" ];
           modules-center = [ "clock" ];
           modules-right = [ "bluetooth" "pulseaudio" "network" "battery" "tray" ];
@@ -383,7 +481,7 @@ with lib;
             format = "{icon} {volume}%";
             format-muted = "🔇";
             format-icons = [ "🔈" "🔉" "🔊" ];
-            on-click = "pavucontrol";
+            on-click = "${config.djh.hyprland.terminal} pulsemixer";
           };
 
           network = {
@@ -505,10 +603,39 @@ with lib;
       '';
     };
 
-    # Configure rofi
+    # Configure pulsemixer - TUI volume control with vim keybinds
+    xdg.configFile."pulsemixer/config".text = ''
+      # Pulsemixer Configuration
+      
+      # Color scheme: 0=default, 1=dark, 2=light
+      color = 0
+      
+      # Use special characters for volume bars
+      use_unicode = 1
+      
+      # Default audio sink/source to show
+      # Leave empty to show all
+      default-tab = 0
+      
+      # Keybindings reference (pulsemixer uses Vi keybindings by default):
+      # j/k or up/down arrows: Navigate devices
+      # Left/right arrows or h/l: Navigate tabs
+      # +/- or w/s: Increase/decrease volume
+      # m: Mute/unmute
+      # q: Quit
+      # n: Goto next volume level (for sink/source)
+      # p: Goto previous volume level
+      # Space: Toggle mute
+      # /: Focus on search
+      # 0-9: Jump to device number
+      
+      # Font rendering (can help with unicode)
+      source-output-index-width = 1
+      sink-input-index-width = 1
+    '';
     programs.rofi = {
       enable = true;
-      package = pkgs.rofi-wayland;
+      package = pkgs.rofi;
       theme = "Arc-Dark";
       extraConfig = {
         modi = "drun,run,window";
@@ -568,7 +695,7 @@ with lib;
           horizontal_padding = 8;
           separator_color = "frame";
           startup_notification = false;
-          dmenu = "${pkgs.rofi-wayland}/bin/rofi -dmenu -p dunst:";
+          dmenu = "${pkgs.rofi}/bin/rofi -dmenu -p dunst:";
           browser = "zen-browser";
           always_run_script = true;
           title = "Dunst";

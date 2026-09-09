@@ -43,13 +43,13 @@ This repository contains my personal Home Manager configuration for managing dot
 
 3. Apply the configuration:
    ```bash
-   home-manager switch
+  home-manager switch --flake ~/.config/home-manager#djh
    ```
 
 ### Regular Usage
 
-- **Apply changes**: `home-manager switch`
-- **Test configuration**: `home-manager build`
+- **Apply changes**: `home-manager switch --flake ~/.config/home-manager#djh`
+- **Test configuration**: `home-manager build --flake ~/.config/home-manager#djh`
 - **Check for issues**: `home-manager news`
 
 ## 📦 Enabled Modules

@@ -2,22 +2,30 @@
 
 {
   
-  # Programs to have default installed and configured on the system.
+  # Programs to have default installed and configured on the system. # THIS IS HOME MANAGER YOU FREAK THIS NEED TO BE SO REDONE XD
   imports = [
     ./programs/git.nix
     ./programs/vscode.nix
     ./programs/zsh.nix
-    ./modules/audio.nix
+    ./modules/audio-simple.nix
+    ./modules/claude-code.nix
     ./modules/desktop-integration.nix
     ./modules/gaming.nix
     ./modules/gnome.nix
     ./modules/hyprland.nix
     ./modules/kitty.nix
     ./modules/neovim.nix
+    # ./modules/theme.nix  # Temporarily disabled - causing flake error
     ./modules/tmux.nix
     ./modules/tridactyl.nix
     ./modules/zen.nix
   ];
+
+  services = {
+    udiskie = {
+      enable = true;
+    };
+  };
 
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
@@ -35,7 +43,9 @@
   djh.tridactyl.enable = true;  # Browser vim-like navigation
   djh.desktop-integration.enable = true;
   djh.gaming.enable = true;              # Enable Steam, Minecraft with enhanced auth
-  djh.audio.enable = true;               # Enhanced audio with browser microphone support
+  djh.audio.enable = true;               # Simple and stable audio configuration
+  djh.claude-code.enable = true;
+  # djh.theme.enable = true;               # Enable Catppuccin theme across system (disabled temporarily)
 
   # This value determines the Home Manager release that your configuration is
   # compatible with. This helps avoid breakage when a new Home Manager release
@@ -82,9 +92,18 @@
   #
   #  /etc/profiles/per-user/djh/etc/profile.d/hm-session-vars.sh
   #
+  #
+
+  programs.hyprshot.enable = true;
+  
+  
   home.sessionVariables = {
     BROWSER = "firefox";
     DEFAULT_BROWSER = "firefox";
+    NIX_BUILD_SHELL = "${pkgs.bash}/bin/bash";
+    # WebRTC and PipeWire support for Chromium (Google Meet microphone)
+    WEBRTC_USE_PIPEWIRE = "1";
+    PULSE_PROP_media_role = "phone";
   };
 
   # Set Firefox as default browser
@@ -98,6 +117,18 @@
       "x-scheme-handler/unknown" = "firefox.desktop";
     };
   };
+
+  # Chromium configuration for WebRTC support (Google Meet microphone)
+  programs.chromium = {
+    enable = true;
+    package = pkgs.chromium;
+    commandLineArgs = [
+      "--enable-webrtc"
+      "--enable-audio-input-permissions"
+      "--disable-setuid-sandbox"
+    ];
+  };
+
 
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;

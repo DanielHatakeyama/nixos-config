@@ -1,5 +1,10 @@
 { config, lib, pkgs, ... }:
 
+
+# TODO: Bro i hate this we need to have a normal neovim configuration that nix will pull / symlink with home manager.
+# Also neovim should be a system wide configuration
+# Maybe add some logic to move around neovim, tmux, and system with super hjkl
+
 with lib;
 
 {
@@ -16,9 +21,8 @@ with lib;
   };
 
   config = mkIf config.djh.neovim.enable {
-    # Install neovim and required packages
+    # Install required tools and dependencies
     home.packages = with pkgs; [
-      neovim
       # Language servers and tools that LazyVim might need
       ripgrep
       fd
@@ -28,22 +32,27 @@ with lib;
       gnumake
       pkg-config
       
+      # Tree-sitter CLI for installing parsers
+      tree-sitter
+      
       # Clipboard support for headless environments
       xclip
       wl-clipboard
     ];
     
+    # Configure neovim through home-manager
+    programs.neovim = {
+      enable = true;
+      defaultEditor = true;
+      viAlias = true;
+      vimAlias = true;
+      vimdiffAlias = true;
+    };
+    
     # Set neovim as default editor
     home.sessionVariables = {
       EDITOR = "nvim";
       VISUAL = "nvim";
-    };
-    
-    # Add shell aliases
-    home.shellAliases = {
-      vi = "nvim";
-      vim = "nvim";
-      vimdiff = "nvim -d";
     };
     
     # Copy your LazyVim config to the expected location - standalone configuration
@@ -130,6 +139,19 @@ with lib;
       -- Keymaps are automatically loaded on the VeryLazy event
       -- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
       -- Add any additional keymaps here
+      
+      -- Disable LazyVim's line move keybindings (Escape+j/k) to avoid accidental triggers
+      local map = vim.keymap.set
+      map("n", "<Esc>j", "<Nop>", { noremap = true, silent = true, desc = "Disabled (was move line down)" })
+      map("n", "<Esc>k", "<Nop>", { noremap = true, silent = true, desc = "Disabled (was move line up)" })
+
+      -- Disable LazyVim's move-line keymaps (Alt-j / Alt-k)
+      vim.keymap.del({ "n", "i", "v" }, "<A-j>")
+      vim.keymap.del({ "n", "i", "v" }, "<A-k>")
+
+      -- Some terminals report Alt as Meta
+      pcall(vim.keymap.del, { "n", "i", "v" }, "<M-j>")
+      pcall(vim.keymap.del, { "n", "i", "v" }, "<M-k>")
     '';
     
     home.file.".config/nvim/lua/config/options.lua".text = ''
@@ -163,7 +185,7 @@ with lib;
       
       -- Add any additional options here
     '';
-    
+
     home.file.".config/nvim/lua/plugins/colorscheme.lua".text = ''
       -- Colorscheme configuration
       return {
@@ -245,6 +267,103 @@ with lib;
       }
     '';
     
+    # Tree-sitter configuration for syntax highlighting and parsing
+    home.file.".config/nvim/lua/plugins/treesitter.lua".text = ''
+      -- Tree-sitter configuration - use LazyVim defaults with our customizations
+      return {
+        {
+          "nvim-treesitter/nvim-treesitter",
+          opts = {
+            ensure_installed = {
+              "bash",
+              "c",
+              "diff",
+              "html",
+              "javascript",
+              "jsdoc",
+              "json",
+              "jsonc",
+              "lua",
+              "luadoc",
+              "luap",
+              "markdown",
+              "markdown_inline",
+              "python",
+              "query",
+              "regex",
+              "rust",
+              "toml",
+              "tsx",
+              "typescript",
+              "vimdoc",
+              "xml",
+              "yaml",
+            },
+          },
+        },
+      }
+    '';
+    
+    # Rust-specific tools and documentation
+    home.file.".config/nvim/lua/plugins/rust.lua".text = ''
+      return {
+        -- Rustaceanvim provides better Rust integration with rust-analyzer
+        {
+          "mrcjkb/rustaceanvim",
+          version = "^4",
+          lazy = false,
+          ft = { "rust" },
+          init = function()
+            -- Enable inlay hints by default
+            vim.g.rustaceanvim = {
+              inlay_hints = {
+                highlight = "NonText",
+              },
+              tools = {
+                hover_actions = {
+                  auto_jump = false,
+                },
+              },
+              server = {
+                on_attach = function(client, bufnr)
+                  -- Enable code lens
+                  vim.keymap.set("n", "<leader>rr", function()
+                    vim.cmd.RustLsp("runnables")
+                  end, { silent = true, buffer = bufnr, desc = "Rust runnables" })
+                  
+                  -- Expand macros
+                  vim.keymap.set("n", "<leader>rm", function()
+                    vim.cmd.RustLsp("expandMacro")
+                  end, { silent = true, buffer = bufnr, desc = "Expand macro" })
+                  
+                  -- Show type hint
+                  vim.keymap.set("n", "K", function()
+                    vim.cmd.RustLsp("hover", "Actions")
+                  end, { silent = true, buffer = bufnr, desc = "Rust docs/hover" })
+                end,
+              },
+            }
+          end,
+        },
+
+        -- Docs.rs viewer - lookup crate documentation
+        {
+          "lbrayner/vim-rzip",
+          lazy = false,
+        },
+
+        -- Better docs navigation
+        {
+          "folke/which-key.nvim",
+          opts = {
+            spec = {
+              { "<leader>r", group = "Rust", icon = "🦀" },
+            },
+          },
+        },
+      }
+    '';
+    
     # Obsidian integration for note-taking
     home.file.".config/nvim/lua/plugins/obsidian.lua".text = ''
       return {
@@ -259,11 +378,90 @@ with lib;
             },
           },
           completion = { nvim_cmp = true },
+          -- Use buffer-local keymaps only when in Obsidian vault
+          use_path_only = true,
         },
         keys = {
-          -- Remap gd to follow links inside vault
-          { "gd", "<cmd>ObsidianFollowLink<CR>", desc = "Follow Obsidian link" },
-          { "gr", "<cmd>ObsidianBacklinks<CR>",  desc = "View backlinks" },
+          -- Obsidian-specific keymaps (buffer-local)
+          { "go", "<cmd>ObsidianFollowLink<CR>", desc = "Follow Obsidian link" },
+          { "gb", "<cmd>ObsidianBacklinks<CR>",  desc = "View backlinks" },
+        },
+      }
+    '';
+    
+    # Tmux navigator integration
+    home.file.".config/nvim/lua/plugins/tmux.lua".text = ''
+      return {
+        "christoomey/vim-tmux-navigator",
+        lazy = false,
+        priority = 1001,
+        init = function()
+          -- Disable default mappings and handle zoomed panes correctly
+          vim.g.tmux_navigator_disable_when_zoomed = 1
+          vim.g.tmux_navigator_no_mappings = 1
+          vim.g.tmux_navigator_no_wrap = 1
+        end,
+        config = function()
+          -- Define a helper to (re)apply our keymaps
+          local function apply_tmux_navigator_keymaps()
+            local map_opts = { silent = true }
+            vim.keymap.set({ "n", "t" }, "<C-h>", "<cmd>TmuxNavigateLeft<CR>", vim.tbl_extend("keep", map_opts, { desc = "Navigate Left" }))
+            vim.keymap.set({ "n", "t" }, "<C-j>", "<cmd>TmuxNavigateDown<CR>", vim.tbl_extend("keep", map_opts, { desc = "Navigate Down" }))
+            vim.keymap.set({ "n", "t" }, "<C-k>", "<cmd>TmuxNavigateUp<CR>", vim.tbl_extend("keep", map_opts, { desc = "Navigate Up" }))
+            vim.keymap.set({ "n", "t" }, "<C-l>", "<cmd>TmuxNavigateRight<CR>", vim.tbl_extend("keep", map_opts, { desc = "Navigate Right" }))
+            vim.keymap.set({ "n", "t" }, "<C-\\>", "<cmd>TmuxNavigatePrevious<CR>", vim.tbl_extend("keep", map_opts, { desc = "Navigate Previous" }))
+          end
+
+          -- Apply keymaps immediately
+          apply_tmux_navigator_keymaps()
+
+          -- Re-apply after VeryLazy event to ensure our mappings win
+          vim.api.nvim_create_autocmd("User", {
+            pattern = "VeryLazy",
+            once = true,
+            callback = apply_tmux_navigator_keymaps,
+          })
+        end,
+      }
+    '';
+    
+    # Additional useful plugins
+    home.file.".config/nvim/lua/plugins/extras.lua".text = ''
+      return {
+        -- Enhanced word motions
+        {
+          "chrisgrieser/nvim-spider",
+          lazy = true,
+          keys = {
+            { "w", "<cmd>lua require('spider').motion('w')<CR>", mode = { "n", "o", "x" }, desc = "Spider-w" },
+            { "e", "<cmd>lua require('spider').motion('e')<CR>", mode = { "n", "o", "x" }, desc = "Spider-e" },
+            { "b", "<cmd>lua require('spider').motion('b')<CR>", mode = { "n", "o", "x" }, desc = "Spider-b" },
+          },
+        },
+        
+        -- Undotree
+        {
+          "jiaoshijie/undotree",
+          dependencies = "nvim-lua/plenary.nvim",
+          config = true,
+          keys = {
+            { "<leader>u", "<cmd>lua require('undotree').toggle()<cr>", desc = "Toggle Undotree" },
+          },
+        },
+      }
+    '';
+
+    home.file.".config/nvim/lua/plugins/nix.lua".text = ''
+      return {
+        { import = "lazyvim.plugins.extras.lang.nix" },
+
+        {
+          "neovim/nvim-lspconfig",
+          opts = function(_, opts)
+            opts.servers = opts.servers or {}
+            opts.servers.nil_ls = nil
+            opts.servers.nixd = {}
+          end,
         },
       }
     '';
