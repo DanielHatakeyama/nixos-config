@@ -8,7 +8,7 @@ with lib;
       enable = mkEnableOption "Gaming applications and configuration";
       
       enableSteam = mkOption {
-       type = types.bool;
+        type = types.bool;
         default = true;
         description = "Enable Steam gaming platform";
       };
@@ -22,22 +22,20 @@ with lib;
   };
 
   config = mkIf config.djh.gaming.enable {
-    # Gaming packages with authentication dependencies
-    home.packages = with pkgs; [
-      # Core gaming applications
-      (mkIf config.djh.gaming.enableSteam steam)
-      (mkIf config.djh.gaming.enableMinecraft prismlauncher)
-      
-      # Authentication and web support dependencies
-      webkitgtk_4_1     # For embedded browsers in launchers (Microsoft auth)
-      xdg-utils         # For proper URL/browser handling
-      libsecret         # For secure credential storage
-      gnome-keyring     # Keyring for storing authentication tokens
-      
-      # Gaming utilities
-      gamemode          # Performance optimization
-      mangohud          # Performance overlay
-    ];
+    home.packages = with pkgs;
+      [
+        # Authentication and web support dependencies
+        webkitgtk_4_1  # For embedded browsers in launchers (Microsoft auth)
+        xdg-utils      # For proper URL/browser handling
+        libsecret      # For secure credential storage
+        gnome-keyring  # Keyring for storing authentication tokens
+
+        # Gaming utilities
+        gamemode  # Performance optimization
+        mangohud  # Performance overlay
+      ]
+      ++ optional config.djh.gaming.enableSteam steam
+      ++ optional config.djh.gaming.enableMinecraft prismlauncher;
 
     # Environment variables for better gaming authentication
     home.sessionVariables = {

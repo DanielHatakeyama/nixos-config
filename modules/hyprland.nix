@@ -46,7 +46,6 @@ with lib;
   config = mkIf config.djh.hyprland.enable {
     # Install Hyprland and related packages
     home.packages = with pkgs; [
-      hyprland
       hyprpaper        # Wallpaper daemon
       hypridle         # Idle daemon
       hyprlock         # Screen locker
@@ -55,7 +54,6 @@ with lib;
       grim             # Screenshot tool
       slurp            # Area selection for screenshots
       swappy           # Screenshot editor
-      rofi             # Application launcher
       waybar           # Status bar
       dunst            # Notification daemon
       pulsemixer       # TUI volume control with vim keybinds
@@ -65,27 +63,24 @@ with lib;
       wlogout          # Logout menu
       wtype            # Wayland typing tool for key injection
       jq               # JSON processor for Hyprland commands
-      # Standard cursor themes
-      vanilla-dmz      # Simple, standard cursor theme
-      adwaita-icon-theme  # GNOME cursor theme
-      capitaine-cursors # Mac like cursor
-      # Nice fonts for ricing
+      # Cursor themes
+      vanilla-dmz
+      adwaita-icon-theme
+      capitaine-cursors
+      # Fonts
       jetbrains-mono
       nerd-fonts.jetbrains-mono
       nerd-fonts.symbols-only
-      # Wallpaper utilities
-      wget             # For downloading wallpapers
-      curl             # Alternative download tool
-
     ];
 
-    # Declaritively create cursor settings
+    # Declaratively set the cursor theme.
     home.pointerCursor = {
-      package = pkgs.capitaine-cursors; # Theme
-      name = "capitaine-cursors";       # "capitaine-cursors-white" for light
+      package = pkgs.capitaine-cursors;
+      name = "capitaine-cursors";
       size = 24;
       gtk.enable = true;
-      x11.enable = true;
+      # x11.enable omitted: cursor is configured for XWayland via the
+      # XCURSOR_THEME/XCURSOR_SIZE env vars in the Hyprland env block below.
     };
 
     # Ensure GTK also uses the correct cursor theme
@@ -232,7 +227,7 @@ with lib;
           "SUPER, k, movefocus, u"
           "SUPER, l, movefocus, r"
 
-          # Window movement (matching skhd cmd+shift+hjkl) TODO: Have special overide behavior maybe with browser jk, terminal special hjkl for tmux nvim
+          # Window movement
           "SUPER_SHIFT, h, movewindow, l"
           "SUPER_SHIFT, j, movewindow, d"
           "SUPER_SHIFT, k, movewindow, u"

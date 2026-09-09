@@ -16,9 +16,6 @@ with lib;
   };
 
   config = mkIf config.djh.desktop-integration.enable {
-    # Ensure XDG desktop integration is enabled
-    targets.genericLinux.enable = pkgs.stdenv.isLinux;
-    
     # Force desktop file updates for common problematic packages
     xdg.desktopEntries.obsidian = {
       name = "Obsidian";

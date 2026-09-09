@@ -101,7 +101,6 @@ in
   obsidian
   tor-browser
   zoom-us
-  prismlauncher
 
   # Virtualization
   gnome-boxes

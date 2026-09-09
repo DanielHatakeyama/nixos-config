@@ -22,6 +22,9 @@
   home.username = "djh";
   home.homeDirectory = "/home/djh";
   home.stateVersion = "25.11";
+  # nixpkgs (unstable) version does not match home-manager release version by
+  # design. This suppresses the mismatch warning.
+  home.enableNixpkgsReleaseCheck = false;
 
   nixpkgs.config.allowUnfree = true;
 
