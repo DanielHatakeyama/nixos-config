@@ -398,7 +398,7 @@ with lib;
           "dunst"
           # Force set cursor theme to capitaine-cursors
           "hyprctl setcursor capitaine-cursors 24"
-          "${config.djh.hyprland.terminal}" # Start terminal on workspace 3
+          "${config.djh.hyprland.terminal}"
         ];
       };
       
