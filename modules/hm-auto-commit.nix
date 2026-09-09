@@ -6,7 +6,7 @@ with lib;
 # changes in the config directory, stages everything, commits with the current
 # generation number, and pushes to the remote.
 #
-# Works regardless of how the switch was invoked (hms alias, full command, CI).
+# Works regardless of how the switch was invoked (hms, full command, CI, etc.).
 # Respects home-manager's $DRY_RUN_CMD: write operations are skipped during
 # `home-manager build`.
 
@@ -30,17 +30,15 @@ in
     home.activation.autoCommit = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       _hmdir="${cfg.configDir}"
 
-      echo "hm-auto-commit: checking ${cfg.configDir} for changes..."
-
       # Skip if this directory is not a git repository.
       if ! ${pkgs.git}/bin/git -C "$_hmdir" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
-        echo "hm-auto-commit: not a git repository, skipping."
+        echo "hm-auto-commit: $_hmdir is not a git repository, skipping."
         return
       fi
 
       # Skip if there are no changes (clean working tree).
       if [ -z "$(${pkgs.git}/bin/git -C "$_hmdir" status --porcelain 2>/dev/null)" ]; then
-        echo "hm-auto-commit: working tree is clean, nothing to commit."
+        echo "hm-auto-commit: nothing to commit."
         return
       fi
 
@@ -52,23 +50,21 @@ in
       _tmp="''${_base%-*}"   # home-manager-<N>-link → home-manager-<N>
       _gen="''${_tmp##*-}"   # home-manager-<N>     → <N>
 
-      echo "hm-auto-commit: staging all changes..."
-      $DRY_RUN_CMD ${pkgs.git}/bin/git -C "$_hmdir" add -A
+      echo "hm-auto-commit: changes detected — staging, committing, and pushing generation $_gen..."
 
-      echo "hm-auto-commit: committing as generation $_gen..."
+      $DRY_RUN_CMD ${pkgs.git}/bin/git -C "$_hmdir" add -A
       $DRY_RUN_CMD ${pkgs.git}/bin/git -C "$_hmdir" commit \
         -m "chore: switch to home-manager generation $_gen"
 
       # Push using the nix store openssh so ssh is available in the
       # restricted activation environment (no system PATH).
-      echo "hm-auto-commit: pushing to remote..."
       if $DRY_RUN_CMD env GIT_SSH_COMMAND="${pkgs.openssh}/bin/ssh" \
           ${pkgs.git}/bin/git -C "$_hmdir" push; then
         echo "Generation $_gen committed and pushed." \
           | ${pkgs.cowsay}/bin/cowsay -r \
           | ${pkgs.lolcat}/bin/lolcat
       else
-        echo "hm-auto-commit: warning: git push failed. Commit is saved locally."
+        echo "hm-auto-commit: push failed — commit is saved locally. Run 'git push' when ready."
       fi
     '';
   };

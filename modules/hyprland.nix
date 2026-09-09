@@ -127,28 +127,16 @@ with lib;
         # Input configuration - your keyboard mapping
         input = {
           kb_layout = "us";
-          kb_variant = "";
-          kb_model = "";
           kb_options = "caps:escape,altwin:swap_alt_win"; # Caps→Escape, Alt↔Super
-          kb_rules = "";
 
           follow_mouse = 1;
           sensitivity = 0; # -1.0 - 1.0, 0 means no modification
-          
-          # Disable cursor warping when focusing windows - prevents wrapping behavior
 
           touchpad = {
             natural_scroll = true;
             disable_while_typing = true;
             tap-to-click = true;
           };
-        };
-
-        # Cursor configuration
-        cursor = {
-          default_monitor = "";
-          zoom_factor = 1.0;
-          zoom_rigid = false;
         };
 
         # General configuration

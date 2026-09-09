@@ -8,6 +8,7 @@
     ./modules/audio-simple.nix
     ./modules/claude-code.nix
     ./modules/hm-auto-commit.nix
+    ./modules/hms.nix
     ./modules/desktop-integration.nix
     ./modules/gaming.nix
     ./modules/gnome.nix
@@ -33,6 +34,7 @@
   djh.audio.enable = true;
   djh.claude-code.enable = true;
   djh.hm-auto-commit.enable = true;
+  djh.hms.enable = true;
   djh.desktop-integration.enable = true;
   djh.gaming.enable = true;
   djh.gnome.enable = true;

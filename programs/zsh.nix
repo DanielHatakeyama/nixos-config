@@ -30,7 +30,6 @@
       ll = "ls -la";
       ".." = "cd ..";
       hm = "home-manager";
-      hms = "home-manager switch --flake ~/.config/home-manager#djh";
       cd = "z";  # Alias cd to zoxide
       nix-shell = "nix-shell-zsh";  # Use zsh in nix-shell by default
       audio = "pavucontrol";  # Quick access to audio control GUI
