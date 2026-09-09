@@ -41,12 +41,9 @@ with lib;
 
     # Environment variables for better gaming authentication
     home.sessionVariables = {
-      # Enable proper browser integration for authentication
-      XDG_CURRENT_DESKTOP = "Hyprland";
-      
       # Java environment for Minecraft authentication
       _JAVA_OPTIONS = "-Djava.net.useSystemProxies=true -Djavafx.platform=gtk";
-      
+
       # Steam environment for better compatibility
       STEAM_EXTRA_COMPAT_TOOLS_PATHS = "${config.home.homeDirectory}/.steam/root/compatibilitytools.d";
     };

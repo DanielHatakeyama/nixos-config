@@ -16,6 +16,11 @@ with lib;
     # mixer GUI so the user can adjust volumes.
     home.packages = with pkgs; [ pavucontrol ];
 
+    home.sessionVariables = {
+      WEBRTC_USE_PIPEWIRE = "1";
+      PULSE_PROP_media_role = "phone";
+    };
+
     # HM-only mitigation for sof-hda-dsp ALSA "Broken pipe" recover loops.
     #
     # Based on live cutout snapshots:

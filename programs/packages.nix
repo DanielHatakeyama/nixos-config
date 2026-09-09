@@ -137,8 +137,7 @@ in
 
 [
 
-  xclip # Idk if i need this`
-  vscode # Maybe make this a module idk, if i use the config i have might need to do that via a module 
+  vscode
 
   gcc
   gnumake

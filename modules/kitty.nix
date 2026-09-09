@@ -1,10 +1,6 @@
 { config, lib, pkgs, ... }:
 
 
-# It might be time to try a different terminal. I should at least see if i can do a speed comparison. 
-# TODO: remove the escape sudo behavior  i hate it.
-
-
 with lib;
 
 {
@@ -42,11 +38,6 @@ with lib;
       nerd-fonts.hack
     ];
 
-    # Setup kitty background on activation
-    home.activation.setupKittyBackground = lib.hm.dag.entryAfter ["writeBoundary"] ''
-      $DRY_RUN_CMD ${config.home.homeDirectory}/.config/home-manager/scripts/setup-kitty-background.sh || true
-    '';
-
     # Use the official Home Manager kitty module
     programs.kitty = {
       enable = true;
@@ -66,7 +57,6 @@ with lib;
         # Ctrl+Backspace to delete word (like Windows/Mac)
         "ctrl+backspace" = "send_text all \\x17";  # Send Ctrl+W to delete word
 
-        # IDK What this vibe code is
         # Ctrl+Delete to delete word forward
         "ctrl+delete" = "send_text all \\x1b\\x64";  # Send Alt+d to delete word forward
         
@@ -112,15 +102,7 @@ with lib;
         enable_audio_bell = false;
         update_check_interval = 0;
         
-        # Static background opacity
         background_opacity = "0.7";
-        
-        # Custom background image
-        background_image = "~/.config/kitty/background.png";
-        background_image_layout = "cscaled";  # Constrained scaling - maintains aspect ratio
-        background_image_linear = true;
-        background_tint = "0.9";  # Darker tint for better text readability
-        background_blur = "40";  # Much more blur for an even softer effect
       };
       
       # Nerd Font symbol mappings from your archived config

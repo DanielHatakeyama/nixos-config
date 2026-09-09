@@ -106,11 +106,6 @@ with lib;
       ];
     };
     
-    # Install fzf for tmux-fzf plugin functionality
-    home.packages = with pkgs; [
-      fzf
-    ];
-    
     # Create a desktop entry for tmux (useful for launching from application menu)
     xdg.desktopEntries.tmux = mkIf pkgs.stdenv.isLinux {
       name = "Tmux";

@@ -23,21 +23,14 @@ with lib;
   config = mkIf config.djh.neovim.enable {
     # Install required tools and dependencies
     home.packages = with pkgs; [
-      # Language servers and tools that LazyVim might need
-      ripgrep
-      fd
-      git
+      # Language servers
       nodejs
-      gcc
-      gnumake
-      pkg-config
-      
+
       # Tree-sitter CLI for installing parsers
       tree-sitter
-      
-      # Clipboard support for headless environments
+
+      # X11 clipboard support
       xclip
-      wl-clipboard
     ];
     
     # Configure neovim through home-manager

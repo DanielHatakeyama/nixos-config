@@ -58,26 +58,21 @@ with lib;
       };
     };
     
-    # Also manually copy desktop files from nix packages to ensure they work
-    home.activation.copyDesktopFiles = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      # Copy desktop files from problematic Nix packages
-      PACKAGES=("obsidian")
-      
-      for pkg in "''${PACKAGES[@]}"; do
-        PKG_PATH=$(command -v "$pkg" 2>/dev/null) || continue
-        NIX_STORE_PATH=$(dirname "$(dirname "$PKG_PATH")")
-        
-        if [ -d "$NIX_STORE_PATH/share/applications" ]; then
-          echo "Copying desktop files for $pkg"
-          mkdir -p ~/.local/share/applications
-          cp "$NIX_STORE_PATH"/share/applications/*.desktop ~/.local/share/applications/ 2>/dev/null || true
-        fi
-      done
-    '';
-    
     # Ensure desktop database is updated
     xdg.mimeApps.enable = true;
     
+    # Chromium: used for Google Meet and other WebRTC applications
+    programs.chromium = {
+      enable = true;
+      package = pkgs.chromium;
+      commandLineArgs = [
+        "--enable-webrtc"
+        "--enable-audio-input-permissions"
+        "--disable-setuid-sandbox"
+        "--enable-features=WebRTCPipeWireCapturer"
+      ];
+    };
+
     # Script to manually fix desktop files for any package
     home.packages = [ 
       (pkgs.writeShellScriptBin "nix-desktop-fix" ''
