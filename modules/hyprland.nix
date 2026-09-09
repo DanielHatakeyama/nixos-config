@@ -426,12 +426,12 @@ with lib;
         splash = false;
 
         preload = [
-          "/home/djh/.config/hypr/wallpapers/landscape.png"
+          "${config.home.homeDirectory}/.config/hypr/wallpapers/landscape.png"
         ];
 
         wallpaper = [
-          "eDP-1,/home/djh/.config/hypr/wallpapers/landscape.png"
-          "HDMI-A-1,/home/djh/.config/hypr/wallpapers/landscape.png"
+          "eDP-1,${config.home.homeDirectory}/.config/hypr/wallpapers/landscape.png"
+          "HDMI-A-1,${config.home.homeDirectory}/.config/hypr/wallpapers/landscape.png"
         ];
       };
     };
