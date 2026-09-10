@@ -244,7 +244,7 @@ with lib;
 
       # GNOME Desktop Interface settings
       "org/gnome/desktop/interface" = {
-        gtk-theme = "Graphite-Dark";
+        gtk-theme = "adw-gtk3-dark";
         icon-theme = "Papirus-Dark";
         cursor-theme = "capitaine-cursors";
         # Show weekday in top bar (like macOS)
@@ -511,8 +511,8 @@ with lib;
     gtk = {
       enable = true;
       theme = {
-        name = "Graphite-Dark";
-        package = pkgs.graphite-gtk-theme;
+        name = "adw-gtk3-dark";
+        package = pkgs.adw-gtk3;
       };
       iconTheme = {
         name = "Papirus-Dark";

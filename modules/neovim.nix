@@ -49,19 +49,18 @@ with lib;
       VISUAL = "nvim";
     };
     
-    # Copy your LazyVim config to the expected location - standalone configuration
-    home.file.".config/nvim/init.lua".text = ''
+    programs.neovim.initLua = ''
       -- Ensure proper integration with system clipboard
       vim.opt.clipboard = 'unnamedplus'
-      
+
       -- Terminal colors and compatibility
       vim.opt.termguicolors = true
-      
+
       -- Set font size if in a GUI
       if vim.g.neovide then
         vim.opt.guifont = "FiraCode Nerd Font:h${toString config.djh.neovim.font.size}"
       end
-      
+
       -- Kitty terminal specific optimizations
       if vim.env.TERM == "xterm-kitty" then
         vim.opt.termguicolors = true
@@ -69,7 +68,7 @@ with lib;
         vim.g.terminal_color_0 = "#1e1e2e"
         vim.g.terminal_color_8 = "#585b70"
       end
-      
+
       -- bootstrap lazy.nvim, LazyVim and your plugins
       require("config.lazy")
     '';
