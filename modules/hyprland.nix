@@ -177,6 +177,18 @@ with lib;
           overlay = false;
         };
 
+        # Firefox 144 crashes on startup when Hyprland advertises the
+        # wp_color_manager_v1 protocol: Firefox mis-negotiates the protocol
+        # version and hits "wp_image_description_v1 has no event 2"
+        # (Mozilla bug 2007856, fixed upstream in Firefox but not yet in
+        # this nixpkgs build). Disabling Hyprland's color management
+        # pipeline stops it from advertising that protocol at all, which
+        # works around the crash until either side ships a fix.
+        # Remove this once Firefox or Hyprland picks up the fix.
+        render = {
+          cm_enabled = false;
+        };
+
         # Animation configuration
         animations = {
           enabled = false; # Disabled per user preference
