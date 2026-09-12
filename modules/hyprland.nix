@@ -196,7 +196,6 @@ with lib;
 
         # Layout configuration (dwindle = BSP-like)
         dwindle = {
-          pseudotile = true;
           preserve_split = true;
           smart_split = false;
           smart_resizing = false;
