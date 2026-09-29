@@ -104,7 +104,11 @@ with lib;
         # Monitor configuration - explicit for both displays
         monitor = [
           "eDP-1,1920x1200@60,0x0,1.0"      # Laptop display at 0x0
-          "HDMI-A-1,3840x2160@30,1920x0,1.0"  # External 4K monitor positioned to the right
+          "HDMI-A-1,preferred,1920x0,1.0"  # External display - auto-negotiate mode
+          # (was hardcoded to 3840x2160@30 for a 4K TV, but the actual monitor
+          # plugged into HDMI-A-1 day-to-day is a 1080p Samsung C27F390 that
+          # doesn't support that mode, causing a black screen until manually
+          # overridden with `hyprctl keyword monitor HDMI-A-1,1920x1080@60,...`)
         ];
 
         # Ensure apps run natively on Wayland (Electron, Qt, GTK, etc.)
