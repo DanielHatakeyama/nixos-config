@@ -1,7 +1,11 @@
 name: check
 
 on:
+  # branches-only: every switch now tags gen/<N> (modules/hm-auto-commit.nix),
+  # and an unscoped `push:` triggers a second, redundant run per tag push.
   push:
+    branches:
+      - main
   pull_request:
 
 jobs:
