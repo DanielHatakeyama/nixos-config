@@ -5,11 +5,11 @@ with lib;
 {
   options.djh.desktop-integration = {
     enable = mkEnableOption "Desktop integration for Nix packages";
-    
+
     # Allow users to specify additional packages that need desktop file fixes
     packages = mkOption {
       type = types.listOf types.package;
-      default = [];
+      default = [ ];
       description = "Additional packages to ensure desktop files for";
       example = [ pkgs.obsidian pkgs.discord ];
     };
@@ -26,7 +26,7 @@ with lib;
       categories = [ "Office" ];
       mimeType = [ "x-scheme-handler/obsidian" ];
     };
-    
+
     # Google Meet as standalone app using Chromium
     xdg.desktopEntries.google-meet = {
       name = "Google Meet";
@@ -40,7 +40,7 @@ with lib;
         StartupWMClass = "meet.google.com";
       };
     };
-    
+
     # Zoom with proper audio integration
     xdg.desktopEntries.zoom = {
       name = "Zoom";
@@ -54,10 +54,10 @@ with lib;
         StartupWMClass = "zoom";
       };
     };
-    
+
     # Ensure desktop database is updated
     xdg.mimeApps.enable = true;
-    
+
     # Chromium: used for Google Meet and other WebRTC applications
     programs.chromium = {
       enable = true;
@@ -71,7 +71,7 @@ with lib;
     };
 
     # Script to manually fix desktop files for any package
-    home.packages = [ 
+    home.packages = [
       (pkgs.writeShellScriptBin "nix-desktop-fix" ''
         #!/bin/bash
         

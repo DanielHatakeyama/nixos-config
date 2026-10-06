@@ -1,0 +1,9 @@
+# statix lint config. See `statix list` for rule IDs/names.
+#
+# repeated_keys (W20) is disabled: it fires on intentionally-grouped
+# attrsets (home.packages/home.file/djh.* split across a module for
+# readability) and Nix merges repeated attrset keys automatically, so this
+# is a style nit, not a correctness issue. Revisit this file (and the ~8
+# flagged modules) as its own readability pass rather than blocking CI on it.
+disabled = ["repeated_keys"]
+ignore = ["templates", "archive_config"]

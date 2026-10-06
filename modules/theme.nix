@@ -64,8 +64,8 @@ with lib;
       papirus-icon-theme
 
       # Additional theming tools
-      lxappearance  # GTK theme selector
-      qt5.full      # Qt components with Catppuccin
+      lxappearance # GTK theme selector
+      qt5.full # Qt components with Catppuccin
     ];
 
     # Environment variables for consistent theming

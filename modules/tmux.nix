@@ -5,13 +5,13 @@ with lib;
 {
   options.djh.tmux = {
     enable = mkEnableOption "Tmux terminal multiplexer configuration";
-    
+
     terminal = mkOption {
       type = types.str;
       default = "screen-256color";
       description = "Default terminal setting for tmux";
     };
-    
+
     prefix = mkOption {
       type = types.str;
       default = "C-Space";
@@ -22,17 +22,17 @@ with lib;
   config = mkIf config.djh.tmux.enable {
     programs.tmux = {
       enable = true;
-      
+
       # Basic tmux configuration
       terminal = config.djh.tmux.terminal;
       prefix = config.djh.tmux.prefix;
-      
+
       # Enable mouse support
       mouse = true;
-      
+
       # Use vi mode keys
       keyMode = "vi";
-      
+
       # Custom key bindings from your config
       extraConfig = ''
         # Custom prefix (also set C-a as secondary)
@@ -86,16 +86,16 @@ with lib;
         bind -n C-k if-shell "#{@is_vim}" 'send-keys C-k'  'if -F "#{pane_at_top}"    "" "select-pane -U"'
         bind -n C-l if-shell "#{@is_vim}" 'send-keys C-l'  'if -F "#{pane_at_right}"  "" "select-pane -R"'
       '';
-      
+
       # Tmux plugins from your configuration
       plugins = with pkgs.tmuxPlugins; [
         # Core navigation and workflow plugins
-        vim-tmux-navigator  # Navigate between vim and tmux panes with Ctrl-hjkl
-        
+        vim-tmux-navigator # Navigate between vim and tmux panes with Ctrl-hjkl
+
         # Session management
-        resurrect          # Persist tmux sessions after computer restart
-        continuum          # Automatically saves sessions every 15 minutes
-        
+        resurrect # Persist tmux sessions after computer restart
+        continuum # Automatically saves sessions every 15 minutes
+
         # Theme - using power-theme as alternative to themepack
         {
           plugin = power-theme;
@@ -105,7 +105,7 @@ with lib;
         }
       ];
     };
-    
+
     # Create a desktop entry for tmux (useful for launching from application menu)
     xdg.desktopEntries.tmux = mkIf pkgs.stdenv.isLinux {
       name = "Tmux";

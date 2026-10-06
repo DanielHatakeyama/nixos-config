@@ -5,13 +5,13 @@ with lib;
 {
   options.djh.tridactyl = {
     enable = mkEnableOption "Tridactyl browser extension configuration";
-    
+
     colorScheme = mkOption {
       type = types.str;
       default = "catppuccin";
       description = "Color scheme for Tridactyl";
     };
-    
+
     customCss = mkOption {
       type = types.str;
       default = "https://raw.githubusercontent.com/DanielHatakeyama/catppuccin-tridactyl/main/catppuccin.css";
@@ -43,9 +43,9 @@ with lib;
       description = "Tridactyl native messaging host";
       path = "${pkgs.tridactyl-native}/bin/native_main";
       type = "stdio";
-      allowed_extensions = [ 
+      allowed_extensions = [
         "tridactyl.vim@cmcaine.co.uk"
-        "tridactyl.vim.betas@cmcaine.co.uk" 
+        "tridactyl.vim.betas@cmcaine.co.uk"
         "tridactyl.vim.betas.nonewtab@cmcaine.co.uk"
       ];
     };

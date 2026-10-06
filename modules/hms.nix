@@ -14,6 +14,7 @@ let
   cfg = config.djh.hms;
   configDir = "${config.home.homeDirectory}/.config/home-manager";
   flakeTarget = "${configDir}#${config.home.username}";
+  currentGeneration = import ./lib/hm-generation.nix { inherit pkgs; };
 in
 {
   options.djh.hms = {
@@ -77,11 +78,7 @@ in
 
           if [[ "$HEAD_BEFORE" != "$HEAD_AFTER" ]]; then
             # A new commit was made by the auto-commit hook.
-            _profile="''${XDG_STATE_HOME:-${config.home.homeDirectory}/.local/state}/nix/profiles/home-manager"
-            _link=$(${pkgs.coreutils}/bin/readlink "$_profile" 2>/dev/null || true)
-            _base=$(${pkgs.coreutils}/bin/basename "$_link")
-            _tmp="''${_base%-*}"
-            _gen="''${_tmp##*-}"
+            _gen=$(${currentGeneration})
             echo "hms: tag '$TAG' applied to generation $_gen and pushed."
           else
             # No config changes — tag landed on the previous commit.

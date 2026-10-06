@@ -6,13 +6,13 @@ with lib;
   options = {
     djh.gaming = {
       enable = mkEnableOption "Gaming applications and configuration";
-      
+
       enableSteam = mkOption {
         type = types.bool;
         default = true;
         description = "Enable Steam gaming platform";
       };
-      
+
       enableMinecraft = mkOption {
         type = types.bool;
         default = true;
@@ -25,14 +25,14 @@ with lib;
     home.packages = with pkgs;
       [
         # Authentication and web support dependencies
-        webkitgtk_4_1  # For embedded browsers in launchers (Microsoft auth)
-        xdg-utils      # For proper URL/browser handling
-        libsecret      # For secure credential storage
-        gnome-keyring  # Keyring for storing authentication tokens
+        webkitgtk_4_1 # For embedded browsers in launchers (Microsoft auth)
+        xdg-utils # For proper URL/browser handling
+        libsecret # For secure credential storage
+        gnome-keyring # Keyring for storing authentication tokens
 
         # Gaming utilities
-        gamemode  # Performance optimization
-        mangohud  # Performance overlay
+        gamemode # Performance optimization
+        mangohud # Performance overlay
       ]
       ++ optional config.djh.gaming.enableSteam steam
       ++ optional config.djh.gaming.enableMinecraft prismlauncher;
@@ -49,16 +49,16 @@ with lib;
     # XDG configuration for proper application handling
     xdg = {
       enable = true;
-      
+
       # Ensure proper MIME type handling for authentication redirects
       mimeApps = {
         enable = true;
         associations.added = {
-          "x-scheme-handler/minecraft" = ["org.prismlauncher.PrismLauncher.desktop"];
-          "application/x-java-archive" = ["org.prismlauncher.PrismLauncher.desktop"];
+          "x-scheme-handler/minecraft" = [ "org.prismlauncher.PrismLauncher.desktop" ];
+          "application/x-java-archive" = [ "org.prismlauncher.PrismLauncher.desktop" ];
         };
       };
-      
+
       # Desktop entries with proper authentication support
       desktopEntries = mkIf config.djh.gaming.enableMinecraft {
         minecraft-auth = {
@@ -122,7 +122,7 @@ with lib;
         start=notify-send "GameMode" "Performance mode activated" --expire-time=2000
         end=notify-send "GameMode" "Performance mode deactivated" --expire-time=2000
       '';
-      
+
       # MangoHud configuration for performance monitoring
       ".config/MangoHud/MangoHud.conf".text = ''
         fps

@@ -11,7 +11,7 @@ with lib;
 {
   options.djh.neovim = {
     enable = mkEnableOption "Neovim configuration with LazyVim";
-    
+
     font = {
       size = mkOption {
         type = types.int;
@@ -33,7 +33,7 @@ with lib;
       # X11 clipboard support
       xclip
     ];
-    
+
     # Configure neovim through home-manager
     programs.neovim = {
       enable = true;
@@ -42,13 +42,13 @@ with lib;
       vimAlias = true;
       vimdiffAlias = true;
     };
-    
+
     # Set neovim as default editor
     home.sessionVariables = {
       EDITOR = "nvim";
       VISUAL = "nvim";
     };
-    
+
     programs.neovim.initLua = ''
       -- Ensure proper integration with system clipboard
       vim.opt.clipboard = 'unnamedplus'
@@ -72,7 +72,7 @@ with lib;
       -- bootstrap lazy.nvim, LazyVim and your plugins
       require("config.lazy")
     '';
-    
+
     home.file.".config/nvim/lua/config/lazy.lua".text = ''
       local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
       if not (vim.uv or vim.loop).fs_stat(lazypath) then
@@ -121,13 +121,13 @@ with lib;
         },
       })
     '';
-    
+
     home.file.".config/nvim/lua/config/autocmds.lua".text = ''
       -- Autocmds are automatically loaded on the VeryLazy event
       -- Default autocmds that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/autocmds.lua
       -- Add any additional autocmds here
     '';
-    
+
     home.file.".config/nvim/lua/config/keymaps.lua".text = ''
       -- Keymaps are automatically loaded on the VeryLazy event
       -- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
@@ -146,7 +146,7 @@ with lib;
       pcall(vim.keymap.del, { "n", "i", "v" }, "<M-j>")
       pcall(vim.keymap.del, { "n", "i", "v" }, "<M-k>")
     '';
-    
+
     home.file.".config/nvim/lua/config/options.lua".text = ''
       -- Options are automatically loaded before lazy.nvim startup
       -- Default options that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/options.lua
@@ -234,7 +234,7 @@ with lib;
         },
       }
     '';
-    
+
     home.file.".config/nvim/lua/plugins/ui.lua".text = ''
       -- UI enhancements for better color and terminal support
       return {
@@ -259,7 +259,7 @@ with lib;
         },
       }
     '';
-    
+
     # Tree-sitter configuration for syntax highlighting and parsing
     home.file.".config/nvim/lua/plugins/treesitter.lua".text = ''
       -- Tree-sitter configuration - use LazyVim defaults with our customizations
@@ -296,7 +296,7 @@ with lib;
         },
       }
     '';
-    
+
     # Rust-specific tools and documentation
     home.file.".config/nvim/lua/plugins/rust.lua".text = ''
       return {
@@ -356,7 +356,7 @@ with lib;
         },
       }
     '';
-    
+
     # Obsidian integration for note-taking
     home.file.".config/nvim/lua/plugins/obsidian.lua".text = ''
       return {
@@ -381,7 +381,7 @@ with lib;
         },
       }
     '';
-    
+
     # Tmux navigator integration
     home.file.".config/nvim/lua/plugins/tmux.lua".text = ''
       return {
@@ -417,7 +417,7 @@ with lib;
         end,
       }
     '';
-    
+
     # Additional useful plugins
     home.file.".config/nvim/lua/plugins/extras.lua".text = ''
       return {

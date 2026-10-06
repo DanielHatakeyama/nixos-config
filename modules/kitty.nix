@@ -6,7 +6,7 @@ with lib;
 {
   options.djh.kitty = {
     enable = mkEnableOption "Kitty terminal configuration";
-    
+
     font = {
       name = mkOption {
         type = types.str;
@@ -14,14 +14,14 @@ with lib;
         description = "Font family to use in Kitty";
         example = "Liga SFMono Nerd Font";
       };
-      
+
       size = mkOption {
         type = types.int;
         default = 13;
         description = "Font size in points";
       };
     };
-    
+
     theme = mkOption {
       type = types.nullOr types.str;
       default = "Catppuccin-Mocha";
@@ -41,36 +41,36 @@ with lib;
     # Use the official Home Manager kitty module
     programs.kitty = {
       enable = true;
-      
+
       # Font configuration
       font = {
         name = config.djh.kitty.font.name;
         size = config.djh.kitty.font.size;
       };
-      
+
       # Theme configuration
       themeFile = config.djh.kitty.theme;
-      
+
       # Key mappings for better editing experience
       keybindings = {
-        
+
         # Ctrl+Backspace to delete word (like Windows/Mac)
-        "ctrl+backspace" = "send_text all \\x17";  # Send Ctrl+W to delete word
+        "ctrl+backspace" = "send_text all \\x17"; # Send Ctrl+W to delete word
 
         # Ctrl+Delete to delete word forward
-        "ctrl+delete" = "send_text all \\x1b\\x64";  # Send Alt+d to delete word forward
-        
+        "ctrl+delete" = "send_text all \\x1b\\x64"; # Send Alt+d to delete word forward
+
         # Additional useful bindings
-        "ctrl+left" = "send_text all \\x1bb";   # Move word left
-        "ctrl+right" = "send_text all \\x1bf";  # Move word right
-        
+        "ctrl+left" = "send_text all \\x1bb"; # Move word left
+        "ctrl+right" = "send_text all \\x1bf"; # Move word right
+
         # Disable Ctrl+L from clearing screen
         "ctrl+l" = "no_op";
 
         # Disable annoying sudo escape behavior
         "esc" = "no_op";
       };
-      
+
       # Terminal settings based on your archived config, adapted for Linux
       settings = {
         # Shell configuration - use zsh as the default shell
@@ -80,15 +80,15 @@ with lib;
         input_delay = 1;
         resize_draw_strategy = "blank";
         resize_debounce_time = "0.001";
-        
+
         # Window appearance
         window_margin_width = 4;
         remember_window_size = false;
         confirm_os_window_close = -2;
-        
+
         # Cursor settings
         cursor_blink_interval = 0;
-        
+
         # Tab bar configuration (matching your archived config)
         tab_bar_edge = "top";
         tab_bar_style = "powerline";
@@ -96,15 +96,15 @@ with lib;
         tab_activity_symbol = "";
         tab_title_max_length = 30;
         tab_title_template = "{fmt.fg.red}{bell_symbol}{fmt.fg.tab} {index}: ({tab.active_oldest_exe}) {title} {activity_symbol}";
-        
+
         # Linux-specific optimizations
         scrollback_lines = 10000;
         enable_audio_bell = false;
         update_check_interval = 0;
-        
+
         background_opacity = "0.7";
       };
-      
+
       # Nerd Font symbol mappings from your archived config
       extraConfig = ''
         # Nerd Font symbol mappings for better icon support in LazyVim
@@ -118,21 +118,21 @@ with lib;
         # Ensure proper font fallback for missing glyphs
         force_ltr = no
       '';
-      
+
       # Enable shell integration for better terminal experience (prioritize zsh)
       shellIntegration = {
-        enableBashIntegration = false;  # Disable bash integration
-        enableFishIntegration = false;  # Disable fish integration
-        enableZshIntegration = true;    # Enable zsh integration with oh-my-zsh
+        enableBashIntegration = false; # Disable bash integration
+        enableFishIntegration = false; # Disable fish integration
+        enableZshIntegration = true; # Enable zsh integration with oh-my-zsh
       };
     };
-    
+
     # Set Kitty as the default terminal for XDG applications
     xdg.mimeApps.defaultApplications = {
       "x-scheme-handler/terminal" = "kitty.desktop";
       "application/x-terminal-emulator" = "kitty.desktop";
     };
-    
+
     # Modern XDG terminal specification support
     xdg.terminal-exec = {
       enable = true;
@@ -141,7 +141,7 @@ with lib;
         GNOME = [ "kitty.desktop" ];
       };
     };
-    
+
     # Create a desktop file for better integration
     xdg.desktopEntries.kitty = {
       name = "Kitty Terminal";

@@ -5,7 +5,7 @@ with lib;
 {
   options.djh.hyprland = {
     enable = mkEnableOption "Hyprland wayland compositor configuration";
-    
+
     enableTiling = mkOption {
       type = types.bool;
       default = true;
@@ -46,23 +46,23 @@ with lib;
   config = mkIf config.djh.hyprland.enable {
     # Install Hyprland and related packages
     home.packages = with pkgs; [
-      hyprpaper        # Wallpaper daemon
-      hypridle         # Idle daemon
-      hyprlock         # Screen locker
-      hyprpicker       # Color picker
-      wl-clipboard     # Wayland clipboard utilities
-      grim             # Screenshot tool
-      slurp            # Area selection for screenshots
-      swappy           # Screenshot editor
-      waybar           # Status bar
-      dunst            # Notification daemon
-      pulsemixer       # TUI volume control with vim keybinds
-      blueman          # Bluetooth manager GUI
-      brightnessctl    # Brightness control
-      playerctl        # Media control
-      wlogout          # Logout menu
-      wtype            # Wayland typing tool for key injection
-      jq               # JSON processor for Hyprland commands
+      hyprpaper # Wallpaper daemon
+      hypridle # Idle daemon
+      hyprlock # Screen locker
+      hyprpicker # Color picker
+      wl-clipboard # Wayland clipboard utilities
+      grim # Screenshot tool
+      slurp # Area selection for screenshots
+      swappy # Screenshot editor
+      waybar # Status bar
+      dunst # Notification daemon
+      pulsemixer # TUI volume control with vim keybinds
+      blueman # Bluetooth manager GUI
+      brightnessctl # Brightness control
+      playerctl # Media control
+      wlogout # Logout menu
+      wtype # Wayland typing tool for key injection
+      jq # JSON processor for Hyprland commands
       # Cursor themes
       vanilla-dmz
       adwaita-icon-theme
@@ -99,12 +99,12 @@ with lib;
       package = pkgs.hyprland;
       systemd.enable = true;
       xwayland.enable = true;
-      
+
       settings = {
         # Monitor configuration - explicit for both displays
         monitor = [
-          "eDP-1,1920x1200@60,0x0,1.0"      # Laptop display at 0x0
-          "HDMI-A-1,preferred,1920x0,1.0"  # External display - auto-negotiate mode
+          "eDP-1,1920x1200@60,0x0,1.0" # Laptop display at 0x0
+          "HDMI-A-1,preferred,1920x0,1.0" # External display - auto-negotiate mode
           # (was hardcoded to 3840x2160@30 for a 4K TV, but the actual monitor
           # plugged into HDMI-A-1 day-to-day is a 1080p Samsung C27F390 that
           # doesn't support that mode, causing a black screen until manually
@@ -157,7 +157,7 @@ with lib;
         # Decoration settings
         decoration = {
           rounding = 12;
-          
+
           blur = {
             enabled = true;
             size = 3;
@@ -168,7 +168,7 @@ with lib;
 
         # Miscellaneous behavior tweaks
         misc = {
-          disable_hyprland_logo = true;       # no splash/logo
+          disable_hyprland_logo = true; # no splash/logo
           disable_splash_rendering = true;
           focus_on_activate = true;
           # Closest current replacement for the removed fullscreen focus behavior
@@ -211,12 +211,12 @@ with lib;
           "float on, match:class ^(pavucontrol)$"
           "float on, match:class ^(rofi)$"
           "float on, match:class ^(wlogout)$"
-          
+
           # VM configuration - always on workspace 10
           "workspace 10, match:class ^(gnome-boxes)$"
           "workspace 10, match:class ^\\.gnome-boxes-wrapped$"
           "workspace 10, match:title ^(.*QEMU.*Windows.*)$"
-          
+
           # Default floating window size and center position
           "size 800 600, match:float true"
           "center on, match:float true"
@@ -246,7 +246,7 @@ with lib;
           "SUPER, 7, workspace, 7"
           "SUPER, 8, workspace, 8"
           "SUPER, 9, workspace, 9"
-          "SUPER, 0, workspace, 10"  # Workspace 10 for VM
+          "SUPER, 0, workspace, 10" # Workspace 10 for VM
 
           # Move window to workspace (matching skhd cmd+shift+1-9)
           "SUPER_SHIFT, 1, movetoworkspace, 1"
@@ -258,7 +258,7 @@ with lib;
           "SUPER_SHIFT, 7, movetoworkspace, 7"
           "SUPER_SHIFT, 8, movetoworkspace, 8"
           "SUPER_SHIFT, 9, movetoworkspace, 9"
-          "SUPER_SHIFT, 0, movetoworkspace, 10"  # Move to workspace 10
+          "SUPER_SHIFT, 0, movetoworkspace, 10" # Move to workspace 10
 
           # Workspace navigation (matching skhd cmd+ctrl+h/l)
           "SUPER_CTRL, h, workspace, e-1"
@@ -288,7 +288,7 @@ with lib;
               ${pkgs.hyprland}/bin/hyprctl dispatch workspace 10
             fi
           ''}"
-          
+
           # Ctrl+Alt+Equal: Leverages VM's grab-release key (Ctrl+Alt) + workspace toggle
           # Pressing all three keys releases VM grab and triggers workspace switch
           "CTRL_ALT, equal, exec, ${pkgs.writeShellScript "vm-toggle-global" ''
@@ -322,9 +322,9 @@ with lib;
           ''}"
 
           # Window management (matching skhd)
-          "SUPER_SHIFT, q, killactive"        # Close window
-          "SUPER, f, fullscreen, 0"           # Fullscreen toggle
-          "SUPER, m, fullscreen, 1"           # Maximize toggle
+          "SUPER_SHIFT, q, killactive" # Close window
+          "SUPER, f, fullscreen, 0" # Fullscreen toggle
+          "SUPER, m, fullscreen, 1" # Maximize toggle
 
           # Float toggle - creates a centered floating window
           "SUPER, t, togglefloating"
@@ -339,16 +339,16 @@ with lib;
           "ALT, Tab, workspace, previous"
 
           # Monitor focus switching
-          "SUPER, period, focusmonitor, +1"    # Focus next monitor (Super + .)
-          "SUPER, comma, focusmonitor, -1"     # Focus previous monitor (Super + ,)
-          "SUPER_SHIFT, period, movewindow, mon:+1"  # Move window to next monitor
-          "SUPER_SHIFT, comma, movewindow, mon:-1"   # Move window to previous monitor
+          "SUPER, period, focusmonitor, +1" # Focus next monitor (Super + .)
+          "SUPER, comma, focusmonitor, -1" # Focus previous monitor (Super + ,)
+          "SUPER_SHIFT, period, movewindow, mon:+1" # Move window to next monitor
+          "SUPER_SHIFT, comma, movewindow, mon:-1" # Move window to previous monitor
 
           # Simple resize bindings (Super + uiop)
-          "SUPER, u, resizeactive, -50 0"      # Shrink width (left)
-          "SUPER, p, resizeactive, 50 0"       # Expand width (right) 
-          "SUPER, o, resizeactive, 0 -50"      # Shrink height (up)
-          "SUPER, i, resizeactive, 0 50"       # Expand height (down)
+          "SUPER, u, resizeactive, -50 0" # Shrink width (left)
+          "SUPER, p, resizeactive, 50 0" # Expand width (right) 
+          "SUPER, o, resizeactive, 0 -50" # Shrink height (up)
+          "SUPER, i, resizeactive, 0 50" # Expand height (down)
 
           # Direct resize bindings (Super + Shift + arrow keys)
           "SUPER_SHIFT, Left, resizeactive, -50 0"
@@ -373,10 +373,10 @@ with lib;
 
           # Screenshot
           "SUPER, Print, exec, grim -g \"$(slurp)\" - | swappy -f -"
-          
+
           # System controls
           "SUPER, Delete, exec, wlogout"
-          
+
           # Toggle waybar visibility
           "SUPER_SHIFT, f, exec, pkill -SIGUSR1 waybar"
         ];
@@ -393,7 +393,7 @@ with lib;
           ", XF86AudioPlay, exec, playerctl play-pause"
           ", XF86AudioNext, exec, playerctl next"
           ", XF86AudioPrev, exec, playerctl previous"
-          
+
           # Simple audio output switching
           "SUPER, F1, exec, ~/.config/home-manager/scripts/audio-switch.sh speakers"
           "SUPER, F2, exec, ~/.config/home-manager/scripts/audio-switch.sh monitor"
@@ -416,7 +416,7 @@ with lib;
           "${config.djh.hyprland.terminal}"
         ];
       };
-      
+
       # Additional configuration from user
       extraConfig = config.djh.hyprland.extraConfig;
     };

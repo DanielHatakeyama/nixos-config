@@ -19,12 +19,31 @@ Thumbs.db
 *.tmp
 *.temp
 
-# Home Manager specific
-.config/
-
 # Local/secret configuration files
 local.nix
 secrets.nix
+
+# Credentials, keys, and other secrets - defense in depth alongside the
+# hm-auto-commit filename/content scan (see modules/hm-auto-commit.nix)
+credentials*
+*.pem
+*.key
+*.p12
+*.pfx
+*.kdbx
+id_rsa*
+id_ed25519*
+id_ecdsa*
+id_dsa*
+.env
+.env.*
+.netrc
+.npmrc
+.pgpass
+*_history
+*.sqlite
+*.sqlite3
+*.db
 
 # Backup files
 *.backup
