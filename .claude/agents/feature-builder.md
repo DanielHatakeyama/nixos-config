@@ -31,6 +31,18 @@ with lib;
 ```
 Wire a new module into `home.nix`: add it to `imports`, set `djh.<name>.enable = true`. No inline config in `home.nix` beyond that.
 
+## Never touch the live session while testing
+
+Your shell inherits whatever `WAYLAND_DISPLAY`/`XDG_RUNTIME_DIR`/`DISPLAY` are set to — which is djh's actual, live desktop session, not a sandbox, no matter how isolated the rest of your environment (worktree, scratch dir) feels. This has already bitten once: an earlier run of this pipeline validated a voice-typing feature by running `wtype` directly, which typed real text into whatever window the user actually had focused at the time.
+
+Rule: never run anything that sends real input, clipboard, or notification events toward the display during validation — `wtype`, `ydotool`, `xdotool`, `wl-copy`/`wl-paste`, `notify-send`, `hyprctl dispatch`, etc. This applies even if the feature you're building is *supposed* to do exactly that once a human enables it for real — the distinction is: validating it is your job, triggering it live is not, until the human does that themselves.
+
+If a feature's logic needs validating right up to a live-interaction step: stop one step short. Verify everything up to the exact text/action that *would* be sent (e.g. capture what `wtype` would receive and confirm it's correct, without invoking `wtype`), and say plainly in your report that the final live step is unverified and needs the human to try it themselves — that's a completely normal, expected thing to report, not a gap to hide.
+
+If you genuinely need to exercise a display/input-affecting command end-to-end, do it against a Wayland instance you spun up yourself and nothing else — e.g. `WLR_BACKENDS=headless WAYLAND_DISPLAY=wayland-test-$$ Hyprland &` creates an independent compositor with its own socket, unconnected to the real session. Confirm the socket name you're pointing tools at is one you created, not whatever was already set in your environment, before running anything.
+
+Defense in depth: when running any command that even plausibly touches the display, strip the ambient session vars explicitly rather than trusting you won't forget — `env -u WAYLAND_DISPLAY -u XDG_RUNTIME_DIR -u DISPLAY -- <cmd>` — so a mistake fails cleanly instead of reaching the real session.
+
 ## Step 1 — branch
 
 **Home-manager-side feature:** run `hms --session <slug>` (short kebab-case name for the feature) from `~/.config/home-manager`. This creates a git worktree at `~/.config/home-manager-sessions/<slug>` on branch `session/<slug>`. Do ALL editing there — never in `~/.config/home-manager` directly.
