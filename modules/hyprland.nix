@@ -69,6 +69,11 @@ in
       wlogout # Logout menu
       wtype # Wayland typing tool for key injection
       jq # JSON processor for Hyprland commands
+      # Client CLI only (pactl) — PipeWire's own pulse socket
+      # (services.pipewire.pulse.enable, system-level) provides the server
+      # side, but nothing installs the client binary scripts/audio-switch.sh
+      # calls. Without this, SUPER+F1/F2/F3 silently no-op.
+      pulseaudio
       # Cursor themes
       vanilla-dmz
       adwaita-icon-theme
