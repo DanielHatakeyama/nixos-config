@@ -47,8 +47,12 @@ get_sink_display_name() {
     local sink_name="$1"
     
     if [ "$USE_PACTL" = true ]; then
-        # Extract the friendly name from the full sink name
-        echo "$sink_name" | sed 's/.*__//;s/__sink.*//' | sed 's/_/ /g' | sed 's/HiFi //g'
+        # Full sink names look like
+        # "...generic.HiFi__Speaker__sink" / "...HiFi__HDMI1__sink" — pull
+        # out just the port name between the last two "__" pairs. (The
+        # previous `s/.*__//` was greedy enough to eat through the port name
+        # too, always leaving the literal word "sink".)
+        echo "$sink_name" | sed -E 's/.*__([^_]+)__sink$/\1/' | sed 's/_/ /g'
     else
         echo "$sink_name"
     fi
