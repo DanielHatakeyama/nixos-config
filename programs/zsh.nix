@@ -38,15 +38,15 @@
     };
 
     # Add visual indicator when in nix-shell or nix develop
-    # Also set speakers as default audio output on shell startup
+    #
+    # This used to also force the default sink/source back to the laptop
+    # speakers/mic on every single shell startup — removed (2026-10-06):
+    # it unconditionally stomped on whatever the user had just explicitly
+    # switched to (e.g. via the SUPER+F1/F2/F3 binds in modules/hyprland.nix,
+    # which it was silently fighting), and NORTH_STAR.md already called this
+    # out as a band-aid to remove ("No `pactl` commands in shell startup" —
+    # device policy belongs in WirePlumber, declaratively, not here).
     initContent = ''
-      # Set laptop speakers as default audio output
-      if command -v pactl &> /dev/null; then
-        pactl set-default-sink alsa_output.pci-0000_00_1f.3-platform-skl_hda_dsp_generic.HiFi__Speaker__sink 2>/dev/null || true
-        # Set laptop microphone as default input (prevents Bluetooth headphones from hijacking mic)
-        pactl set-default-source alsa_input.pci-0000_00_1f.3.analog-stereo 2>/dev/null || true
-      fi
-      
       # Visual indicator when in nix-shell or nix develop
       if [[ -n "$IN_NIX_SHELL" ]] || [[ -n "$DIRENV_FILE" ]]; then
         PROMPT="❄️  $PROMPT"
