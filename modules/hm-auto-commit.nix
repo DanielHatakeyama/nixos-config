@@ -87,7 +87,11 @@ in
 
   config = mkIf cfg.enable {
     home.activation.autoCommit = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      _hmdir="${cfg.configDir}"
+      # HM_CONFIG_DIR (set by hms, see modules/hms.nix) overrides this when
+      # the switch targeted a session worktree rather than the main repo —
+      # the Nix-eval-time default alone can't tell, since both checkouts
+      # evaluate the exact same module code.
+      _hmdir="''${HM_CONFIG_DIR:-${cfg.configDir}}"
 
       if ! ${pkgs.git}/bin/git -C "$_hmdir" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
         echo "hm-auto-commit: $_hmdir is not a git repository, skipping."
@@ -165,26 +169,39 @@ in
             $DRY_RUN_CMD ${pkgs.git}/bin/git -C "$_hmdir" add -A
             $DRY_RUN_CMD ${pkgs.git}/bin/git -C "$_hmdir" commit -m "$_msg"
 
-            # One annotated tag per generation (gen/<N>), so every generation
-            # is a durable git ref regardless of whether `hms --tag` was used
-            # — rollback becomes `git checkout gen/<N>` and history is
-            # bisectable by generation without reading `home-manager
-            # generations` output.
-            if [ "$_is_new_gen" = true ] \
-                && ! ${pkgs.git}/bin/git -C "$_hmdir" rev-parse "gen/$_gen" > /dev/null 2>&1; then
-              $DRY_RUN_CMD ${pkgs.git}/bin/git -C "$_hmdir" tag -a "gen/$_gen" -m "generation $_gen"
-            fi
+            # Branch-aware from here: `main` keeps the original low-friction
+            # behavior (tag + push, every switch). Any other branch — i.e. a
+            # session worktree created by `hms --session` — commits locally
+            # only. It never auto-pushes and never takes a gen/<N> tag
+            # (those numbers aren't branch-scoped, so reusing them across
+            # branches would collide). The branch stays local until
+            # `hms land` fast-forwards it into main.
+            _branch=$(${pkgs.git}/bin/git -C "$_hmdir" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "HEAD")
 
-            # Push using the nix store openssh so ssh is available in the
-            # restricted activation environment (no system PATH).
-            # --follow-tags carries the gen/<N> tag along in the same push.
-            if $DRY_RUN_CMD env GIT_SSH_COMMAND="${pkgs.openssh}/bin/ssh" \
-                ${pkgs.git}/bin/git -C "$_hmdir" push --follow-tags; then
-              echo "$_msg" \
-                | ${pkgs.cowsay}/bin/cowsay -r \
-                | ${pkgs.lolcat}/bin/lolcat
+            if [ "$_branch" != "main" ]; then
+              echo "hm-auto-commit: on branch '$_branch' — committed locally. Not pushing or tagging (session branches stay local until 'hms land')."
             else
-              echo "hm-auto-commit: push failed — commit is saved locally. Run 'git push --follow-tags' when ready."
+              # One annotated tag per generation (gen/<N>), so every generation
+              # is a durable git ref regardless of whether `hms --tag` was used
+              # — rollback becomes `git checkout gen/<N>` and history is
+              # bisectable by generation without reading `home-manager
+              # generations` output.
+              if [ "$_is_new_gen" = true ] \
+                  && ! ${pkgs.git}/bin/git -C "$_hmdir" rev-parse "gen/$_gen" > /dev/null 2>&1; then
+                $DRY_RUN_CMD ${pkgs.git}/bin/git -C "$_hmdir" tag -a "gen/$_gen" -m "generation $_gen"
+              fi
+
+              # Push using the nix store openssh so ssh is available in the
+              # restricted activation environment (no system PATH).
+              # --follow-tags carries the gen/<N> tag along in the same push.
+              if $DRY_RUN_CMD env GIT_SSH_COMMAND="${pkgs.openssh}/bin/ssh" \
+                  ${pkgs.git}/bin/git -C "$_hmdir" push --follow-tags; then
+                echo "$_msg" \
+                  | ${pkgs.cowsay}/bin/cowsay -r \
+                  | ${pkgs.lolcat}/bin/lolcat
+              else
+                echo "hm-auto-commit: push failed — commit is saved locally. Run 'git push --follow-tags' when ready."
+              fi
             fi
           fi
         fi
