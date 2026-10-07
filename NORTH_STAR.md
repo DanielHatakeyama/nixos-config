@@ -32,34 +32,35 @@ testable. Rolling back is always possible and always safe.
 
 ## Architecture Vision
 
-### Single Unified Flake
+### Composed Flakes, Not a Single Repo
 
-The end state is one git repository containing both the NixOS system configuration
-and the home-manager user configuration. Home-manager runs as a NixOS module, not
-standalone. One command applies both.
+Revised 2026-10-06. The end state is **two repositories, composed, not merged**:
+`/etc/nixos` stays its own git repo and flake; this home-manager repo stays its
+own. `/etc/nixos/flake.nix` takes this repo as a flake input and applies it via
+`home-manager.nixosModules.home-manager`, so a single `sudo nixos-rebuild switch`
+still applies both atomically — but each repo keeps independent history, CI, and
+a fast iteration path (`hms` still works standalone here, without touching the
+system at all).
 
+This beats one merged repo for two reasons that matter for how this config is
+actually worked on now: declarative-instance switching becomes a matter of which
+commit/branch of *this* repo `/etc/nixos`'s flake.lock pins (a different
+`nixosConfigurations.<name>` can point at a different ref of this repo, with no
+extra machinery), and sub-agents/branches can work at the right granularity —
+home-manager-only changes branch this repo, system-level changes branch
+`/etc/nixos`, without forcing every change through one lock-step history.
+
+`/etc/nixos` layout (system side):
 ```
-nixos-config/
-  flake.nix                        # single entry point for everything
-  flake.lock                       # all inputs pinned here
-  hosts/
-    nixos/
-      configuration.nix            # system-level config
-      hardware-configuration.nix   # generated, machine-specific
-  home/
-    djh/
-      default.nix                  # user home entry point
-      modules/                     # feature modules
-      programs/                    # program-specific configs
-  modules/
-    nixos/                         # reusable NixOS modules
-    home-manager/                  # reusable HM modules
-  secrets/                         # age-encrypted secrets (agenix)
-  wallpapers/                      # wallpapers tracked in repo
-  config/                          # standalone config files (neovim, etc.)
-    nvim/                          # standalone Neovim config, symlinked in
-  templates/                       # nix-shell / nix develop templates
+/etc/nixos/
+  flake.nix            # nixosConfigurations.nixos; takes this repo as an input
+  flake.lock
+  configuration.nix    # system-level config (unchanged by the flake wrap)
+  hardware-configuration.nix
 ```
+
+This repo's own layout is unchanged by the above — see the Module Structure
+section below.
 
 ### Module Structure
 
@@ -201,13 +202,27 @@ rebuild                   # apply to full system
 ### Reverting
 
 ```bash
-# Revert to any previous generation
-home-manager generations   # list generations
-home-manager switch --flake .#djh /nix/var/nix/profiles/per-user/djh/home-manager-N-link
-
-# Or via git
-git reset --hard <tag-or-commit>
+# Every generation is tagged automatically (modules/hm-auto-commit.nix) —
+# rollback by generation number without reading `home-manager generations`:
+git checkout gen/<N>
 hms
+
+# Full system rollback (covers home-manager too, since Milestone B):
+sudo nixos-rebuild switch --rollback
+```
+
+### Branching and Sessions
+
+```bash
+# Isolated experimentation: a git worktree + branch, auto-commits stay local
+hms --session <name>
+cd ~/.config/home-manager-sessions/<name>
+# ...edit, then from inside the worktree:
+hms                          # tests + auto-commits on session/<name>, never pushes
+
+# When ready (from anywhere):
+git -C ~/.config/home-manager-sessions/<name> rebase main   # if main moved on
+hms land <name>                                              # ff-merge + push + cleanup
 ```
 
 ---
@@ -230,7 +245,10 @@ hms
 
 | Area | Status |
 |------|--------|
-| Unified flake (NixOS + HM) | Not started — NixOS config is still non-flake at /etc/nixos |
+| Composed flakes (NixOS + HM) | **Done** (2026-10-06) — `/etc/nixos` is a flake composing this repo as an input, not a merged repo (see Architecture Vision above) |
+| CI/CD + hooks | **Done** (2026-10-06) — `nix flake check` (statix/deadnix/nixpkgs-fmt + full build) as real flake checks, mirrored in GitHub Actions; `hm-auto-commit` gates every switch on the same checks |
+| Generation tagging | **Done** — every generation auto-tagged `gen/<N>` |
+| Session/branch workflow | **Done** (2026-10-06) — `hms --session`/`hms land`, branch-aware auto-commit (only `main` auto-pushes) |
 | Module structure | Mostly clean — ongoing refinement |
 | Dead code removal | Complete for this pass |
 | Neovim standalone config | Not started |
@@ -239,5 +257,7 @@ hms
 | Audio declarative | Partial — PipeWire at system level, WirePlumber rules in HM, pactl band-aid still in zsh |
 | Wallpaper in repo | Not started |
 | agenix secrets | Not started |
-| Unified rebuild script | Not started |
+| Unified rebuild script | **Done** — `sudo nixos-rebuild switch` applies system + home-manager atomically (Milestone B) |
 | Keyboard remapping in Hyprland only | Not started — currently split between Hyprland and GNOME module |
+| NixOS VM tests | Not started — planned, self-hosted runner on this machine (has KVM) |
+| Manager-gated merges / background agents | Not started — deliberately sequenced after the above, see memory `cicd-roadmap` |
