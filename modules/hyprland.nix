@@ -2,6 +2,12 @@
 
 with lib;
 
+let
+  # Nix-managed so the bindl entries below reference a store path, not a
+  # hardcoded ~/.config/home-manager/... location that breaks if this repo
+  # isn't checked out at exactly that path.
+  audioSwitch = pkgs.writeShellScript "audio-switch" (builtins.readFile ../scripts/audio-switch.sh);
+in
 {
   options.djh.hyprland = {
     enable = mkEnableOption "Hyprland wayland compositor configuration";
@@ -75,6 +81,7 @@ with lib;
 
     # Declaratively set the cursor theme.
     home.pointerCursor = {
+      enable = true;
       package = pkgs.capitaine-cursors;
       name = "capitaine-cursors";
       size = 24;
@@ -99,6 +106,11 @@ with lib;
       package = pkgs.hyprland;
       systemd.enable = true;
       xwayland.enable = true;
+      # Pinned explicitly rather than relying on home-manager's
+      # stateVersion-gated default (which silently switches to "lua" once
+      # home.stateVersion reaches 26.05) — this whole config is hyprlang
+      # syntax, so staying on it should be a deliberate, visible choice.
+      configType = "hyprlang";
 
       settings = {
         # Monitor configuration - explicit for both displays
@@ -394,10 +406,13 @@ with lib;
           ", XF86AudioNext, exec, playerctl next"
           ", XF86AudioPrev, exec, playerctl previous"
 
-          # Simple audio output switching
-          "SUPER, F1, exec, ~/.config/home-manager/scripts/audio-switch.sh speakers"
-          "SUPER, F2, exec, ~/.config/home-manager/scripts/audio-switch.sh monitor"
-          "SUPER, F3, exec, ~/.config/home-manager/scripts/audio-switch.sh toggle"
+          # Simple audio output switching. Nix-store path, not the
+          # ~/.config/home-manager/scripts/... path this used to hardcode —
+          # that broke if the repo wasn't checked out at exactly that
+          # location; this works regardless.
+          "SUPER, F1, exec, ${audioSwitch} speakers"
+          "SUPER, F2, exec, ${audioSwitch} monitor"
+          "SUPER, F3, exec, ${audioSwitch} toggle"
         ];
 
         bindel = [
@@ -407,10 +422,15 @@ with lib;
           ", XF86MonBrightnessDown, exec, brightnessctl s 10%-"
         ];
 
-        # Startup applications
+        # Startup applications. waybar and dunst are deliberately NOT here:
+        # both run as proper systemd --user services (programs.waybar.systemd
+        # below; services.dunst always creates one) tied to
+        # graphical-session.target, which Hyprland's own systemd.enable
+        # activates. That gets them Restart=on-failure and an automatic
+        # reload on config changes — a bare exec-once process has neither,
+        # so a crash (or anything that kills it) leaves it dead until the
+        # whole session restarts, which is exactly what happened here.
         exec-once = [
-          "waybar"
-          "dunst"
           # Force set cursor theme to capitaine-cursors
           "hyprctl setcursor capitaine-cursors 24"
           "${config.djh.hyprland.terminal}"
@@ -450,6 +470,11 @@ with lib;
     # Configure supporting applications
     programs.waybar = {
       enable = true;
+      # Proper systemd supervision instead of a bare exec-once process (see
+      # the comment on exec-once above) — Restart=on-failure, and config
+      # changes trigger a reload automatically instead of needing a session
+      # restart to pick up.
+      systemd.enable = true;
       settings = {
         mainBar = {
           layer = "top";
