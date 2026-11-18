@@ -155,7 +155,7 @@ in
 
           touchpad = {
             natural_scroll = true;
-            disable_while_typing = true;
+            disable_while_typing = false;
             tap-to-click = true;
           };
         };
@@ -423,8 +423,8 @@ in
         bindel = [
           ", XF86AudioRaiseVolume, exec, wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"
           ", XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
-          ", XF86MonBrightnessUp, exec, brightnessctl s 10%+"
-          ", XF86MonBrightnessDown, exec, brightnessctl s 10%-"
+          ", XF86MonBrightnessUp, exec, brightnessctl -e4 -n1 s 5%+"
+          ", XF86MonBrightnessDown, exec, brightnessctl -e4 -n1 s 5%-"
         ];
 
         # Startup applications. waybar and dunst are deliberately NOT here:

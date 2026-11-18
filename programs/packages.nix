@@ -108,6 +108,9 @@ in
   # Cloud / infrastructure
   google-cloud-sdk
 
+  # AI coding harness
+  opencode
+
   # Containerization
   docker
   docker-compose

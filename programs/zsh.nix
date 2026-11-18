@@ -51,6 +51,10 @@
       if [[ -n "$IN_NIX_SHELL" ]] || [[ -n "$DIRENV_FILE" ]]; then
         PROMPT="❄️  $PROMPT"
       fi
+
+      # Secrets (e.g. GEMINI_API_KEY for opencode) live in an untracked,
+      # chmod 600 file so they never end up in this git-tracked repo.
+      [[ -r "$HOME/.config/secrets/env" ]] && source "$HOME/.config/secrets/env"
     '';
   };
 
